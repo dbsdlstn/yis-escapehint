@@ -1,14 +1,15 @@
 // src/app.ts
 import express from "express";
-import cors from "cors";
+import cors, { CorsOptions } from "cors";
 import helmet from "helmet";
 import logger from "./shared/utils/logger.util";
 import { errorHandler } from "./shared/middleware/error.middleware";
+import { performanceMiddleware } from "./shared/middleware/performance.middleware";
 import { apiLimiter, loginLimiter } from "./shared/middleware/rate-limit.middleware";
-import { router as themeRouter } from "./modules/theme/theme.controller";
-import { router as sessionRouter } from "./modules/session/session.controller";
-import { router as hintRouter } from "./modules/hint/hint.controller";
-import { router as authRouter } from "./modules/auth/auth.controller";
+import { themeRouter } from "./modules/theme/theme.controller";
+import { sessionRouter } from "./modules/session/session.controller";
+import { hintRouter } from "./modules/hint/hint.controller";
+import { authRouter } from "./modules/auth/auth.controller";
 import { authMiddleware } from "./shared/middleware/auth.middleware";
 import { env } from "./config/env.config";
 
@@ -40,14 +41,48 @@ app.use(
   })
 );
 
-// CORS 설정
-app.use(cors());
+// CORS 설정 - 환경 변수에서 허용된 origin 목록 가져오기
+const corsOrigin = env.CORS_ORIGIN;
+const corsOptions: cors.CorsOptions = {
+  origin: function (origin, callback) {
+    // 개발 환경에서는 origin이 undefined일 수 있음
+    if (env.NODE_ENV === 'development' && !origin) {
+      callback(null, true);
+      return;
+    }
+
+    // origin이 없거나 CORS_ORIGIN이 *이면 모든 origin 허용
+    if (!origin || corsOrigin === '*') {
+      callback(null, true);
+      return;
+    }
+
+    // 환경 변수에 설정된 origin 목록에 포함되어 있는지 확인
+    const allowedOrigins = corsOrigin.split(',').map(o => o.trim());
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      // 와일드카드(*) 지원 (예: https://*.vercel.app)
+      if (allowedOrigin.includes('*')) {
+        const regexPattern = allowedOrigin.replace(/\*/g, '.*');
+        return new RegExp(`^${regexPattern}$`).test(origin);
+      }
+      return origin === allowedOrigin;
+    });
+
+    callback(null, isAllowed);
+  },
+  credentials: true, // 쿠키를 포함한 요청 허용
+};
+
+app.use(cors(corsOptions));
 
 // JSON 파싱 미들웨어
 app.use(express.json());
 
 // URL 인코딩 파싱 미들웨어
 app.use(express.urlencoded({ extended: true }));
+
+// Performance measurement middleware
+app.use(performanceMiddleware);
 
 // Rate Limiting 미들웨어 (모든 API 라우트에 적용)
 app.use(apiLimiter);

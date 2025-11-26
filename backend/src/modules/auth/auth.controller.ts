@@ -7,6 +7,7 @@ import logger from "../../shared/utils/logger.util";
 import { sendResponse, sendErrorResponse } from "../../shared/utils/response/api-response.util";
 
 export const router = Router();
+export const authRouter = router;
 
 // 관리자 로그인 (더 엄격한 Rate Limiting 적용)
 router.post("/login", loginLimiter, async (req: Request, res: Response) => {

@@ -57,74 +57,78 @@ export class SessionService {
   }
 
   async submitHint(sessionId: string, code: string) {
-    // First get the session
-    const session = await this.prisma.gameSession.findUnique({
-      where: { id: sessionId },
-    });
+    // Use a transaction to ensure data consistency
+    return this.prisma.$transaction(async (tx) => {
+      // First get the session
+      const session = await tx.gameSession.findUnique({
+        where: { id: sessionId },
+      });
 
-    if (!session) {
-      throw new SessionNotFoundError(sessionId);
-    }
+      if (!session) {
+        throw new SessionNotFoundError(sessionId);
+      }
 
-    // Find the hint by code
-    const hint = await this.prisma.hint.findFirst({
-      where: {
-        code: code.toUpperCase(),
-      },
-    });
+      // Find the hint by code - this should be optimized with proper indexing
+      const hint = await tx.hint.findFirst({
+        where: {
+          code: code.toUpperCase(),
+        },
+      });
 
-    // BR-06: Handle different types of hint code validation failures
-    if (!hint) {
-      throw new HintNotFoundError(code);
-    }
+      // BR-06: Handle different types of hint code validation failures
+      if (!hint) {
+        throw new HintNotFoundError(code);
+      }
 
-    // Check if the hint is for the correct theme
-    if (hint.themeId !== session.themeId) {
-      throw new HintThemeMismatchError(code);
-    }
+      // Check if the hint is for the correct theme
+      if (hint.themeId !== session.themeId) {
+        throw new HintThemeMismatchError(code);
+      }
 
-    // Check if the hint is inactive
-    if (!hint.isActive) {
-      throw new HintInactiveError(code);
-    }
+      // Check if the hint is inactive
+      if (!hint.isActive) {
+        throw new HintInactiveError(code);
+      }
 
-    // Check if hint was already used in this session
-    const existingUsage = await this.prisma.hintUsage.findFirst({
-      where: {
-        sessionId,
-        hintId: hint.id,
-      },
-    });
-
-    if (!existingUsage) {
-      // Record hint usage
-      await this.prisma.hintUsage.create({
-        data: {
+      // Check if hint was already used in this session
+      const existingUsage = await tx.hintUsage.findFirst({
+        where: {
           sessionId,
           hintId: hint.id,
         },
       });
 
-      // Increment hint count
-      await this.prisma.gameSession.update({
-        where: { id: sessionId },
-        data: { usedHintCount: { increment: 1 } },
+      if (!existingUsage) {
+        // Record hint usage
+        await tx.hintUsage.create({
+          data: {
+            sessionId,
+            hintId: hint.id,
+          },
+        });
+
+        // Increment hint count
+        await tx.gameSession.update({
+          where: { id: sessionId },
+          data: { usedHintCount: { increment: 1 } },
+        });
+      }
+
+      // Calculate progress rate based on the highest progress of all hints used
+      // Only include hints for this specific session to avoid performance issues
+      const hintUsages = await tx.hintUsage.findMany({
+        where: { sessionId },
+        include: { hint: true },
       });
-    }
 
-    // Calculate progress rate based on the highest progress of all hints used
-    const hintUsages = await this.prisma.hintUsage.findMany({
-      where: { sessionId },
-      include: { hint: true },
+      const maxProgressRate = Math.max(0, ...hintUsages.map(usage => usage.hint.progressRate));
+
+      return {
+        hint,
+        progressRate: maxProgressRate,
+        alreadyUsed: !!existingUsage,
+      };
     });
-
-    const maxProgressRate = Math.max(0, ...hintUsages.map(usage => usage.hint.progressRate));
-
-    return {
-      hint,
-      progressRate: maxProgressRate,
-      alreadyUsed: !!existingUsage,
-    };
   }
 
   async endSession(id: string) {

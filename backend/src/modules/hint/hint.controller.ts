@@ -7,6 +7,7 @@ import { sendResponse, sendErrorResponse } from "../../shared/utils/response/api
 
 const hintService = new HintService();
 export const router = Router();
+export const hintRouter = router;
 
 // 관리자용: 테마별 힌트 목록 조회
 router.get("/themes/:themeId/hints", authenticateToken, async (req: Request, res: Response) => {

@@ -7,6 +7,7 @@ import { sendResponse, sendErrorResponse } from "../../shared/utils/response/api
 
 const sessionService = new SessionService();
 export const router = Router();
+export const sessionRouter = router;
 
 // 세션 생성 (플레이어용)
 router.post("/", async (req: Request, res: Response) => {
