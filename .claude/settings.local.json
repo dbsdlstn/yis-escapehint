@@ -2,9 +2,21 @@
   "permissions": {
     "allow": [
       "Bash(git pull:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npm init -y)",
+      "Bash(npm install:*)",
+      "Bash(npx prisma init)",
+      "Bash(node test-db-connection.js:*)",
+      "Bash(npx prisma:*)",
+      "Bash(psql:*)",
+      "Bash(docker --version:*)",
+      "mcp__postgresql-mcp__pg_execute_sql"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "postgresql-mcp"
+  ]
 }

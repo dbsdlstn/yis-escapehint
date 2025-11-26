@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Theme {
+  id          String        @id @default(uuid())
+  name        String        @unique
+  description String?
+  playTime    Int
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  hints       Hint[]
+  sessions    GameSession[]
+
+  @@index([isActive])
+}
+
+model Hint {
+  id           String       @id @default(uuid())
+  themeId      String
+  code         String
+  content      String
+  answer       String
+  progressRate Int
+  order        Int
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  theme        Theme        @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  usages       HintUsage[]
+
+  @@unique([themeId, code])
+  @@index([themeId, code])
+}
+
+model GameSession {
+  id             String       @id @default(uuid())
+  themeId        String
+  startTime      DateTime     @default(now())
+  endTime        DateTime?
+  usedHintCount  Int          @default(0)
+  status         String       @default("in_progress")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  theme          Theme        @relation(fields: [themeId], references: [id])
+  hintUsages     HintUsage[]
+
+  @@index([themeId, status])
+}
+
+model HintUsage {
+  id        String      @id @default(uuid())
+  sessionId String
+  hintId    String
+  usedAt    DateTime    @default(now())
+  session   GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  hint      Hint        @relation(fields: [hintId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, hintId])
+  @@index([sessionId])
+}
