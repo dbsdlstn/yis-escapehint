@@ -1,0 +1,704 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "EscapeHint API",
+    "version": "1.0.1",
+    "description": "API specification for the EscapeHint service, providing real-time hints for escape room players and management tools for administrators. This specification has been reviewed and aligned with the PRD, ERD, and wireframes."
+  },
+  "servers": [
+    {
+      "url": "https://escapehint.vercel.app/api",
+      "description": "Production Server"
+    }
+  ],
+  "tags": [
+    { "name": "Player", "description": "Endpoints for escape room players." },
+    {
+      "name": "Admin-Auth",
+      "description": "Endpoints for admin authentication."
+    },
+    { "name": "Admin-Themes", "description": "Endpoints for managing themes." },
+    { "name": "Admin-Hints", "description": "Endpoints for managing hints." },
+    {
+      "name": "Admin-Sessions",
+      "description": "Endpoints for monitoring and managing game sessions."
+    }
+  ],
+  "paths": {
+    "/themes": {
+      "get": {
+        "tags": ["Player"],
+        "summary": "Get Playable Themes",
+        "description": "Retrieves a list of themes available for players. By default, it returns only active themes.",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter themes by status. Only 'active' is allowed for players.",
+            "schema": {
+              "type": "string",
+              "enum": ["active"],
+              "default": "active"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of playable themes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Theme" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions": {
+      "post": {
+        "tags": ["Player"],
+        "summary": "Start a New Game Session",
+        "description": "Creates a new game session for a selected theme and starts the timer.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Game session created successfully.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GameSession" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/sessions/{sessionId}": {
+      "get": {
+        "tags": ["Player"],
+        "summary": "Get Session Details",
+        "description": "Recovers and retrieves the details of an ongoing game session using its ID, essential for browser refresh scenarios.",
+        "parameters": [{ "$ref": "#/components/parameters/SessionId" }],
+        "responses": {
+          "200": {
+            "description": "Details of the game session.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GameSession" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/sessions/{sessionId}/hints": {
+      "post": {
+        "tags": ["Player"],
+        "summary": "Use a Hint",
+        "description": "Submits a hint code to get the corresponding hint content for the current session. If the same code is used again, it doesn't count as a new hint usage.",
+        "parameters": [{ "$ref": "#/components/parameters/SessionId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UseHintRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Hint content successfully retrieved.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Hint" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/admin/auth/login": {
+      "post": {
+        "tags": ["Admin-Auth"],
+        "summary": "Admin Login",
+        "description": "Authenticates an admin and returns a JWT token for accessing protected admin routes.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminLoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminLoginResponse"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/admin/themes": {
+      "get": {
+        "tags": ["Admin-Themes"],
+        "summary": "Get All Themes (Admin)",
+        "description": "Retrieves a list of all themes, including active and inactive ones. Includes hint count for UI display.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "A list of all themes with their hint counts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Theme" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Admin-Themes"],
+        "summary": "Create a New Theme",
+        "description": "Adds a new escape room theme to the system.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateThemeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Theme created successfully.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Theme" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        }
+      }
+    },
+    "/admin/themes/{themeId}": {
+      "put": {
+        "tags": ["Admin-Themes"],
+        "summary": "Update a Theme",
+        "description": "Updates the details of an existing theme (name, description, etc.).",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/ThemeId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateThemeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Theme updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Theme" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "tags": ["Admin-Themes"],
+        "summary": "Delete a Theme",
+        "description": "Deletes a theme and all its associated hints (cascade delete). Cannot be deleted if an associated game session is currently in progress.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/ThemeId" }],
+        "responses": {
+          "204": { "description": "Theme deleted successfully." },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        }
+      }
+    },
+    "/admin/themes/{themeId}/hints": {
+      "get": {
+        "tags": ["Admin-Hints"],
+        "summary": "Get All Hints for a Theme",
+        "description": "Retrieves a list of all hints for a specific theme, sorted by the 'order' field.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/ThemeId" }],
+        "responses": {
+          "200": {
+            "description": "A list of hints for the theme.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Hint" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "post": {
+        "tags": ["Admin-Hints"],
+        "summary": "Create a New Hint",
+        "description": "Adds a new hint to a specific theme. The hint code must be unique within the theme.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/ThemeId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHintRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Hint created successfully.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Hint" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        }
+      }
+    },
+    "/admin/hints/{hintId}": {
+      "put": {
+        "tags": ["Admin-Hints"],
+        "summary": "Update a Hint",
+        "description": "Updates the details of an existing hint (content, answer, etc.).",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/HintId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHintRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Hint updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Hint" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "tags": ["Admin-Hints"],
+        "summary": "Delete a Hint",
+        "description": "Deletes a specific hint from the system.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/HintId" }],
+        "responses": {
+          "204": { "description": "Hint deleted successfully." },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/admin/hints/{hintId}/order": {
+      "patch": {
+        "tags": ["Admin-Hints"],
+        "summary": "Update Hint Order",
+        "description": "Updates the display order of a specific hint, used for drag-and-drop reordering in the UI.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/HintId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHintOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Hint order updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "message": { "type": "string" } }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/admin/sessions": {
+      "get": {
+        "tags": ["Admin-Sessions"],
+        "summary": "Monitor Game Sessions",
+        "description": "Retrieves a list of game sessions, with optional filtering by status, for monitoring purposes.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter sessions by status. If omitted, returns all sessions.",
+            "schema": {
+              "type": "string",
+              "enum": ["in_progress", "completed", "aborted"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of game sessions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/GameSession" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/admin/sessions/{sessionId}": {
+      "delete": {
+        "tags": ["Admin-Sessions"],
+        "summary": "Force-end a Game Session",
+        "description": "Allows an administrator to forcibly end a game session, changing its status to 'aborted'.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/SessionId" }],
+        "responses": {
+          "204": { "description": "Session aborted successfully." },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Theme": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "readOnly": true },
+          "name": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "playTime": { "type": "integer", "description": "in minutes" },
+          "isActive": { "type": "boolean" },
+          "difficulty": {
+            "type": "string",
+            "description": "Visual representation of difficulty, e.g., '★★★☆☆'",
+            "nullable": true
+          },
+          "hintCount": {
+            "type": "integer",
+            "description": "Number of hints in this theme.",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          }
+        }
+      },
+      "Hint": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "readOnly": true },
+          "themeId": { "type": "string", "format": "uuid" },
+          "code": { "type": "string" },
+          "content": { "type": "string" },
+          "answer": { "type": "string" },
+          "progressRate": { "type": "integer" },
+          "order": { "type": "integer" },
+          "isActive": { "type": "boolean" },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          }
+        }
+      },
+      "GameSession": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "readOnly": true },
+          "themeId": { "type": "string", "format": "uuid" },
+          "startTime": { "type": "string", "format": "date-time" },
+          "endTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "usedHintCount": { "type": "integer" },
+          "usedHintCodes": { "type": "array", "items": { "type": "string" } },
+          "status": {
+            "type": "string",
+            "enum": ["in_progress", "completed", "aborted"]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          }
+        }
+      },
+      "CreateSessionRequest": {
+        "type": "object",
+        "required": ["themeId"],
+        "properties": {
+          "themeId": { "type": "string", "format": "uuid" }
+        }
+      },
+      "UseHintRequest": {
+        "type": "object",
+        "required": ["code"],
+        "properties": {
+          "code": { "type": "string", "example": "HINT01" }
+        }
+      },
+      "AdminLoginRequest": {
+        "type": "object",
+        "required": ["password"],
+        "properties": {
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "admin123"
+          }
+        }
+      },
+      "AdminLoginResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": { "type": "string", "format": "jwt" }
+        }
+      },
+      "CreateThemeRequest": {
+        "type": "object",
+        "required": ["name", "playTime"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 50,
+            "example": "Zombie Lab"
+          },
+          "description": { "type": "string", "nullable": true },
+          "playTime": {
+            "type": "integer",
+            "minimum": 10,
+            "maximum": 180,
+            "example": 60
+          },
+          "isActive": { "type": "boolean", "default": true },
+          "difficulty": {
+            "type": "string",
+            "nullable": true,
+            "example": "★★★★☆"
+          }
+        }
+      },
+      "UpdateThemeRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "maxLength": 50 },
+          "description": { "type": "string", "nullable": true },
+          "playTime": { "type": "integer", "minimum": 10, "maximum": 180 },
+          "isActive": { "type": "boolean" },
+          "difficulty": { "type": "string", "nullable": true }
+        }
+      },
+      "CreateHintRequest": {
+        "type": "object",
+        "required": ["code", "content", "answer", "progressRate"],
+        "properties": {
+          "code": { "type": "string", "maxLength": 20, "example": "HINT-01" },
+          "content": { "type": "string", "maxLength": 500 },
+          "answer": { "type": "string", "maxLength": 200 },
+          "progressRate": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "order": {
+            "type": "integer",
+            "description": "Hint display order. If not provided, it will be added to the end."
+          },
+          "isActive": { "type": "boolean", "default": true }
+        }
+      },
+      "UpdateHintRequest": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string", "maxLength": 20 },
+          "content": { "type": "string", "maxLength": 500 },
+          "answer": { "type": "string", "maxLength": 200 },
+          "progressRate": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "order": { "type": "integer" },
+          "isActive": { "type": "boolean" }
+        }
+      },
+      "UpdateHintOrderRequest": {
+        "type": "object",
+        "required": ["order"],
+        "properties": {
+          "order": {
+            "type": "integer",
+            "description": "The new position (order) of the hint."
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": { "type": "string" }
+        }
+      }
+    },
+    "parameters": {
+      "SessionId": {
+        "name": "sessionId",
+        "in": "path",
+        "required": true,
+        "description": "Unique identifier of the game session.",
+        "schema": { "type": "string", "format": "uuid" }
+      },
+      "ThemeId": {
+        "name": "themeId",
+        "in": "path",
+        "required": true,
+        "description": "Unique identifier of the theme.",
+        "schema": { "type": "string", "format": "uuid" }
+      },
+      "HintId": {
+        "name": "hintId",
+        "in": "path",
+        "required": true,
+        "description": "Unique identifier of the hint.",
+        "schema": { "type": "string", "format": "uuid" }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad Request - The server cannot or will not process the request due to something that is perceived to be a client error (e.g., malformed request syntax).",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Unauthorized - The client must authenticate itself to get the requested response. JWT token is missing or invalid.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Not Found - The server can't find the requested resource.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Conflict - The request conflicts with the current state of the server (e.g., resource already exists, or a theme with active sessions cannot be deleted).",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Enter JWT token in 'Value' field: Bearer <JWT>"
+      }
+    }
+  }
+}

@@ -1,0 +1,121 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+
+# React build output
+build/
+dist/
+out/
+
+# Next.js
+.next
+.cache/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Temporary directories used by tools
+temp/
+tmp/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Production builds
+public/build/
+assets/build/
+
+# Sensitive files
+config/secrets.yml
+config/credentials.yml
+config/credentials.yml.enc
+
+# Database
+*.db
+*.db-journal
+
+# npm
+npm-debug.log*
+npm ERR!*
+npm WARN registry*
+
+# yarn
+yarn-debug.log*
+yarn-error.log*
+
+# pnpm
+pnpm-debug.log*
+
+# Testing
+coverage/
+coverage/**/*
+.nyc_output/
+
+# Production
+public/uploads/
+
+# Environment specific files
+.env.production
+.env.development
+.env.test
+.env.staging
+.env.local
+
+# React specific
+*.env.local
+*.env.development.local
+*.env.test.local
+*.env.production.local
+
+# Build artifacts
+*.min.js
+*.min.css
+*.bundle.js
+*.chunk.js
+
+# IDE and editor files
+.vs/
+*.sublime-project
+*.sublime-workspace
+.vscode
+.settings

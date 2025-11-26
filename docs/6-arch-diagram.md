@@ -32,8 +32,7 @@ EscapeHint는 다음 세 가지 핵심 가치를 중심으로 설계됩니다:
 2. **컴포넌트 다이어그램** - 프론트엔드/백엔드 주요 컴포넌트
 3. **데이터 플로우** - 플레이어와 관리자 데이터 흐름
 4. **배포 구조** - 인프라 및 배포 환경
-5. **ER 다이어그램** - 데이터베이스 엔티티 관계
-6. **API 엔드포인트 구조** - RESTful API 구조
+5. **API 엔드포인트 구조** - RESTful API 구조
 
 ---
 
@@ -405,112 +404,7 @@ graph LR
 
 ---
 
-## 5. 데이터 모델 (ER Diagram)
-
-### 5.1 엔티티 관계도
-
-```mermaid
-erDiagram
-    THEME ||--o{ HINT : "has many"
-    THEME ||--o{ GAME_SESSION : "has many"
-    GAME_SESSION ||--o{ HINT_USAGE : "tracks"
-    HINT ||--o{ HINT_USAGE : "used in"
-
-    THEME {
-        uuid id PK
-        string name
-        string description
-        int playTime
-        boolean isActive
-        datetime createdAt
-        datetime updatedAt
-    }
-
-    HINT {
-        uuid id PK
-        uuid themeId FK
-        string code
-        string content
-        string answer
-        int progressRate
-        int order
-        boolean isActive
-        datetime createdAt
-        datetime updatedAt
-    }
-
-    GAME_SESSION {
-        uuid id PK
-        uuid themeId FK
-        datetime startTime
-        datetime endTime
-        int usedHintCount
-        json usedHintCodes
-        enum status
-        datetime createdAt
-        datetime updatedAt
-    }
-
-    HINT_USAGE {
-        uuid id PK
-        uuid sessionId FK
-        uuid hintId FK
-        datetime usedAt
-    }
-```
-
-### 설명
-
-**주요 엔티티:**
-
-1. **THEME (테마)**
-
-   - 방탈출 게임 테마 정보
-   - 제한 시간(playTime), 활성화 상태(isActive) 관리
-
-2. **HINT (힌트)**
-
-   - 특정 테마에 속한 힌트
-   - 코드(code), 내용(content), 정답(answer), 진행률(progressRate)
-   - 테마 내에서 코드 중복 불가 (UNIQUE 제약)
-
-3. **GAME_SESSION (게임 세션)**
-
-   - 플레이어의 게임 진행 상태
-   - 사용 힌트 코드 목록(usedHintCodes)은 JSON 배열로 저장
-   - 상태: in_progress, completed, aborted
-
-4. **HINT_USAGE (힌트 사용 기록)**
-   - 세션별 힌트 사용 이력 추적
-   - 통계 분석용 (2차 버전)
-
-**관계:**
-
-- Theme (1) → (N) Hint
-- Theme (1) → (N) GameSession
-- GameSession (N) ↔ (N) Hint (through HINT_USAGE)
-
----
-
-### 5.2 주요 제약 조건
-
-```sql
--- 테마 내 힌트 코드 고유성
-UNIQUE INDEX hint_theme_code_unique ON HINT(themeId, code);
-
--- 진행률 범위 제약
-CHECK (progressRate >= 0 AND progressRate <= 100);
-
--- 제한 시간 범위 제약
-CHECK (playTime >= 10 AND playTime <= 180);
-
--- 세션 상태 제약
-ENUM status ('in_progress', 'completed', 'aborted');
-```
-
----
-
-## 6. API 엔드포인트 구조
+## 5. API 엔드포인트 구조
 
 ### 6.1 플레이어 API
 
@@ -540,7 +434,7 @@ graph LR
 
 ---
 
-### 6.2 관리자 API
+### 5.2 관리자 API
 
 ```mermaid
 graph LR
@@ -579,9 +473,9 @@ graph LR
 
 ---
 
-## 7. 기술 스택 요약
+## 6. 기술 스택 요약
 
-### 7.1 프론트엔드
+### 6.1 프론트엔드
 
 | 분류            | 기술            | 버전 | 용도             |
 | --------------- | --------------- | ---- | ---------------- |
@@ -596,7 +490,7 @@ graph LR
 
 ---
 
-### 7.2 백엔드
+### 6.2 백엔드
 
 | 분류       | 기술           | 버전     | 용도                     |
 | ---------- | -------------- | -------- | ------------------------ |
@@ -611,7 +505,7 @@ graph LR
 
 ---
 
-### 7.3 인프라
+### 6.3 인프라
 
 | 분류         | 기술                     | 용도                     |
 | ------------ | ------------------------ | ------------------------ |
@@ -624,7 +518,7 @@ graph LR
 
 ---
 
-### 7.4 개발 도구
+### 6.4 개발 도구
 
 | 분류          | 기술              | 용도             |
 | ------------- | ----------------- | ---------------- |
@@ -636,9 +530,9 @@ graph LR
 
 ---
 
-## 8. 아키텍처 설계 원칙
+## 7. 아키텍처 설계 원칙
 
-### 8.1 단순성 (Simplicity)
+### 7.1 단순성 (Simplicity)
 
 **원칙**: 최소한의 기술 스택으로 빠른 개발 및 유지보수
 
@@ -648,7 +542,7 @@ graph LR
 
 ---
 
-### 8.2 확장성 (Scalability)
+### 7.2 확장성 (Scalability)
 
 **원칙**: 향후 확장 가능한 구조
 
@@ -659,7 +553,7 @@ graph LR
 
 ---
 
-### 8.3 보안 (Security)
+### 7.3 보안 (Security)
 
 **원칙**: 최소 권한 및 데이터 보호
 
@@ -671,7 +565,7 @@ graph LR
 
 ---
 
-### 8.4 성능 (Performance)
+### 7.4 성능 (Performance)
 
 **원칙**: 빠른 응답 및 낮은 지연 시간
 
@@ -682,7 +576,7 @@ graph LR
 
 ---
 
-## 9. 아키텍처 의사결정 기록 (ADR)
+## 8. 아키텍처 의사결정 기록 (ADR)
 
 ### ADR-01: Vercel 풀스택 배포
 
@@ -774,7 +668,7 @@ graph LR
 
 ---
 
-## 10. 향후 개선 방향 (Roadmap)
+## 9. 향후 개선 방향 (Roadmap)
 
 ### 2차 버전 (2026 Q1)
 
@@ -794,22 +688,24 @@ graph LR
 
 ---
 
-## 11. 참고 자료
+## 10. 참고 자료
 
 - [도메인 정의서](./1-domain-definition.md) - 비즈니스 규칙 및 엔티티
 - [PRD](./3-prd.md) - 기술 스택 및 요구사항
 - [사용자 시나리오](./4-user-scenario.md) - 데이터 흐름 참고
 - [프로젝트 구조 원칙](./5-project-structure.md) - 코드 구조 및 네이밍 가이드
+- [ERD](./7-ERD.md) - 데이터베이스 ERD
 - [Mermaid 문서](https://mermaid.js.org/) - 다이어그램 문법
 
 ---
 
-## 12. 문서 변경 이력
+## 11. 문서 변경 이력
 
 | 버전 | 날짜       | 작성자                | 변경 내용                                     | 승인자 |
 | ---- | ---------- | --------------------- | --------------------------------------------- | ------ |
 | 1.0  | 2025-11-26 | Architecture Reviewer | 초안 작성 (5개 다이어그램 + API 구조)         | 윤인수 |
 | 1.1  | 2025-11-26 | Architecture Reviewer | 프로젝트 구조 원칙 반영, 아키텍처 패턴 명확화 | 윤인수 |
+| 1.2  | 2025-11-26 | Architecture Reviewer | ERD 부분을 7-ERD.md 파일로 분리               | 윤인수 |
 
 ---
 
