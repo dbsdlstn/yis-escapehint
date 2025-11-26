@@ -9,11 +9,17 @@ datasource db {
   provider = "postgresql"
 }
 
+enum SessionStatus {
+  in_progress
+  completed
+  aborted
+}
+
 model Theme {
   id          String        @id @default(uuid())
   name        String        @unique
   description String?
-  playTime    Int
+  playTime    Int           @default(60)
   isActive    Boolean       @default(true)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -29,8 +35,8 @@ model Hint {
   code         String
   content      String
   answer       String
-  progressRate Int
-  order        Int
+  progressRate Int          @default(0)
+  order        Int          @default(0)
   isActive     Boolean      @default(true)
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
@@ -47,7 +53,7 @@ model GameSession {
   startTime      DateTime     @default(now())
   endTime        DateTime?
   usedHintCount  Int          @default(0)
-  status         String       @default("in_progress")
+  status         SessionStatus @default(in_progress)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   theme          Theme        @relation(fields: [themeId], references: [id])

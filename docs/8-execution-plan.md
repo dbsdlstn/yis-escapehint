@@ -1591,19 +1591,19 @@ FE-018, BE-026 → DEPLOY-002 → DEPLOY-005 (E2E, P1)
 - [x] **DB-002**: Prisma 스키마 작성 (Theme, Hint, GameSession, HintUsage)
 - [x] **DB-003**: 환경 변수 설정 및 Supabase 연결
 - [x] **DB-004**: 마이그레이션 생성 (실제 DB 적용은 Supabase 설정 후)
-- [ ] **DB-005**: Seed 데이터 삽입 (3개 테마, 9개 힌트)
-- [ ] **DB-006**: 인덱스 검증 (7개 인덱스)
-- [ ] **DB-007**: 제약 조건 검증 (UNIQUE, CHECK, FK)
-- [ ] **DB-008**: Prisma Client 테스트 쿼리 성공
-- [ ] **DB-009**: 비즈니스 규칙 제약 조건 검증 (BR-01, BR-04, BR-07)
+- [x] **DB-005**: Seed 데이터 삽입 (3개 테마, 9개 힌트)
+- [x] **DB-006**: 인덱스 검증 (7개 인덱스)
+- [x] **DB-007**: 제약 조건 검증 (UNIQUE, CHECK, FK)
+- [x] **DB-008**: Prisma Client 테스트 쿼리 성공
+- [x] **DB-009**: 비즈니스 규칙 제약 조건 검증 (BR-01, BR-04, BR-07)
 
 #### Afternoon (Backend - 8시간)
 
-- [ ] **BE-001**: 백엔드 프로젝트 초기화
-- [ ] **BE-002**: TypeScript, ESLint, Prettier 설정
-- [ ] **BE-003**: Prisma 연동 (의존성: DB-005)
-- [ ] **BE-004**: Express 서버 기본 설정
-- [ ] **BE-005**: Winston 로깅 (파일 전송, 로그 레벨)
+- [x] **BE-001**: 백엔드 프로젝트 초기화
+- [x] **BE-002**: TypeScript, ESLint, Prettier 설정
+- [x] **BE-003**: Prisma 연동 (의존성: DB-005)
+- [x] **BE-004**: Express 서버 기본 설정
+- [x] **BE-005**: Winston 로깅 (파일 전송, 로그 레벨)
 - [ ] **BE-006**: 에러 처리 + helmet 보안 미들웨어
 - [ ] **BE-007**: Zod 검증 미들웨어
 - [ ] **BE-008**: Rate Limiting (P0)
