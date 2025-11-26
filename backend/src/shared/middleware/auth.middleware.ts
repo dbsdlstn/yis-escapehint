@@ -1,24 +1,64 @@
 import { Request, Response, NextFunction } from "express";
-import { AuthService } from "../../modules/auth/auth.service";
+import { verifyToken } from "../utils/jwt.util";
+import { UnauthorizedError } from "../errors/AppError";
 
-const authService = new AuthService();
-
-export const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
-
-  if (!token) {
-    return res.status(401).json({ message: "인증 토큰이 필요합니다." });
-  }
-
-  try {
-    const isValid = await authService.verifyToken(token);
-    if (!isValid) {
-      return res.status(401).json({ message: "유효하지 않은 토큰입니다." });
+// Request 타입 확장 (타입 정의 파일도 있지만 명시적으로 선언)
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        userId: string;
+        role: string;
+        [key: string]: any;
+      };
     }
+  }
+}
+
+/**
+ * JWT 인증 미들웨어
+ * Authorization 헤더에서 Bearer 토큰을 추출하고 검증합니다.
+ * 검증 성공 시 req.user에 디코딩된 페이로드를 저장합니다.
+ */
+export const authMiddleware = (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): void => {
+  try {
+    // Authorization 헤더 추출
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      throw new UnauthorizedError("인증 토큰이 필요합니다.");
+    }
+
+    // Bearer 토큰 형식 확인
+    const parts = authHeader.split(" ");
+    if (parts.length !== 2 || parts[0] !== "Bearer") {
+      throw new UnauthorizedError("잘못된 토큰 형식입니다.");
+    }
+
+    const token = parts[1];
+
+    // 토큰 검증
+    const payload = verifyToken(token);
+
+    // req.user에 페이로드 저장
+    req.user = payload;
+
     next();
-    return; // Explicitly return after calling next
-  } catch (_error) {
-    return res.status(401).json({ message: "인증 토큰이 유효하지 않습니다." });
+  } catch (error) {
+    if (error instanceof UnauthorizedError) {
+      next(error);
+    } else if (error instanceof Error) {
+      // JWT 검증 에러를 UnauthorizedError로 변환
+      next(new UnauthorizedError(error.message));
+    } else {
+      next(new UnauthorizedError("인증에 실패했습니다."));
+    }
   }
 };
+
+// 기존 코드와의 호환성을 위해 alias 제공
+export const authenticateToken = authMiddleware;

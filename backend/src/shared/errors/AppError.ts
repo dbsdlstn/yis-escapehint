@@ -35,3 +35,21 @@ export class SessionNotFoundError extends AppError {
     super(`세션을 찾을 수 없습니다: ${id}`, 404);
   }
 }
+
+export class HintInactiveError extends AppError {
+  constructor(code: string) {
+    super(`현재 사용할 수 없는 힌트입니다: ${code}`, 400);
+  }
+}
+
+export class HintThemeMismatchError extends AppError {
+  constructor(code: string) {
+    super(`현재 테마에서 사용할 수 없는 코드입니다: ${code}`, 400);
+  }
+}
+
+export class ConflictError extends AppError {
+  constructor(message: string) {
+    super(message, 409);
+  }
+}

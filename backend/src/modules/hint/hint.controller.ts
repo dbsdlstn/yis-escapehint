@@ -2,6 +2,8 @@
 import { Router, Request, Response } from "express";
 import { HintService } from "./hint.service";
 import { authenticateToken } from "../../shared/middleware/auth.middleware";
+import { AppError } from "../../shared/errors/AppError";
+import { sendResponse, sendErrorResponse } from "../../shared/utils/response/api-response.util";
 
 const hintService = new HintService();
 export const router = Router();
@@ -11,16 +13,21 @@ router.get("/themes/:themeId/hints", authenticateToken, async (req: Request, res
   try {
     const { themeId } = req.params;
     const hints = await hintService.getHintsByTheme(themeId);
-    res.json(hints);
+    sendResponse(res, hints, "Hints retrieved successfully", 200);
     return;
-  } catch (_error) {
-    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  } catch (error) {
+    if (error instanceof AppError) {
+      // Error handling is done by the global error middleware
+      throw error;
+    }
+
+    sendErrorResponse(res, "서버 오류가 발생했습니다.", 500);
     return;
   }
 });
 
 // 관리자용: 힌트 생성
-router.post("/themes/:themeId", authenticateToken, async (req: Request, res: Response) => {
+router.post("/themes/:themeId/hints", authenticateToken, async (req: Request, res: Response) => {
   try {
     const { themeId } = req.params;
     const { code, content, answer, progressRate, order, isActive } = req.body;
@@ -35,16 +42,21 @@ router.post("/themes/:themeId", authenticateToken, async (req: Request, res: Res
       isActive,
     });
 
-    res.status(201).json(hint);
+    sendResponse(res, hint, "Hint created successfully", 201);
     return;
-  } catch (_error) {
-    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  } catch (error) {
+    if (error instanceof AppError) {
+      // Error handling is done by the global error middleware
+      throw error;
+    }
+
+    sendErrorResponse(res, "서버 오류가 발생했습니다.", 500);
     return;
   }
 });
 
 // 관리자용: 힌트 수정
-router.put("/:id", authenticateToken, async (req: Request, res: Response) => {
+router.put("/hints/:id", authenticateToken, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { code, content, answer, progressRate, order, isActive } = req.body;
@@ -58,38 +70,44 @@ router.put("/:id", authenticateToken, async (req: Request, res: Response) => {
       isActive,
     });
 
-    if (!hint) {
-      return res.status(404).json({ message: "힌트를 찾을 수 없습니다." });
+    sendResponse(res, hint, "Hint updated successfully", 200);
+    return;
+  } catch (error) {
+    if (error instanceof AppError) {
+      // Error handling is done by the global error middleware
+      throw error;
     }
 
-    res.json(hint);
-    return;
-  } catch (_error) {
-    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    sendErrorResponse(res, "서버 오류가 발생했습니다.", 500);
     return;
   }
 });
 
 // 관리자용: 힌트 삭제
-router.delete("/:id", authenticateToken, async (req: Request, res: Response) => {
+router.delete("/hints/:id", authenticateToken, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const result = await hintService.deleteHint(id);
 
     if (!result) {
-      return res.status(404).json({ message: "힌트를 찾을 수 없습니다." });
+      return sendErrorResponse(res, "힌트를 찾을 수 없습니다.", 404);
     }
 
-    res.status(204).send();
+    sendResponse(res, null, "Hint deleted successfully", 200);
     return;
-  } catch (_error) {
-    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  } catch (error) {
+    if (error instanceof AppError) {
+      // Error handling is done by the global error middleware
+      throw error;
+    }
+
+    sendErrorResponse(res, "서버 오류가 발생했습니다.", 500);
     return;
   }
 });
 
 // 관리자용: 힌트 순서 변경
-router.patch("/:id/order", authenticateToken, async (req: Request, res: Response) => {
+router.patch("/hints/:id/order", authenticateToken, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { order } = req.body;
@@ -97,13 +115,18 @@ router.patch("/:id/order", authenticateToken, async (req: Request, res: Response
     const result = await hintService.updateHintOrder(id, order);
 
     if (!result) {
-      return res.status(404).json({ message: "힌트를 찾을 수 없습니다." });
+      return sendErrorResponse(res, "힌트를 찾을 수 없습니다.", 404);
     }
 
-    res.json({ message: "힌트 순서가 업데이트되었습니다." });
+    sendResponse(res, { message: "힌트 순서가 업데이트되었습니다." }, "Hint order updated successfully", 200);
     return;
-  } catch (_error) {
-    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  } catch (error) {
+    if (error instanceof AppError) {
+      // Error handling is done by the global error middleware
+      throw error;
+    }
+
+    sendErrorResponse(res, "서버 오류가 발생했습니다.", 500);
     return;
   }
 });

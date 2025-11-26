@@ -21,6 +21,7 @@ model Theme {
   description String?
   playTime    Int           @default(60)
   isActive    Boolean       @default(true)
+  difficulty  String?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   hints       Hint[]

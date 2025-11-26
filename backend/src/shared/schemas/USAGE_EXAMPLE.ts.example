@@ -1,0 +1,222 @@
+/**
+ * Zod 검증 미들웨어 사용 예제
+ *
+ * 이 파일은 실제 라우터에서 검증 미들웨어를 사용하는 방법을 보여줍니다.
+ * 참고용이므로 실행되지 않습니다.
+ */
+
+import { Router, Request, Response, NextFunction } from "express";
+import { validate } from "@/shared/middleware/validate.middleware";
+import {
+  createThemeSchema,
+  updateThemeSchema,
+  themeIdParamSchema,
+  createHintSchema,
+  updateHintSchema,
+  useHintSchema,
+  createSessionSchema,
+  adminLoginSchema,
+} from "@/shared/schemas";
+
+const router = Router();
+
+// ============================================================
+// 예제 1: Theme 생성 (body만 검증)
+// ============================================================
+router.post(
+  "/themes",
+  validate(createThemeSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // req.body는 이미 검증되었음
+      // { name: string, playTime: number, description?: string, isActive?: boolean, difficulty?: string }
+      const { name, playTime, description, isActive, difficulty } = req.body;
+
+      // 비즈니스 로직 실행
+      // const theme = await themeService.create(req.body);
+
+      res.status(201).json({ message: "테마가 생성되었습니다" });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// ============================================================
+// 예제 2: Theme 수정 (params + body 검증)
+// ============================================================
+router.put(
+  "/themes/:themeId",
+  validate(updateThemeSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // req.params.themeId와 req.body 모두 검증되었음
+      const { themeId } = req.params;
+      const updateData = req.body;
+
+      // 비즈니스 로직 실행
+      // const theme = await themeService.update(themeId, updateData);
+
+      res.json({ message: "테마가 수정되었습니다" });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// ============================================================
+// 예제 3: Theme 삭제 (params만 검증)
+// ============================================================
+router.delete(
+  "/themes/:themeId",
+  validate(themeIdParamSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // req.params.themeId가 검증되었음 (UUID 형식)
+      const { themeId } = req.params;
+
+      // 비즈니스 로직 실행
+      // await themeService.delete(themeId);
+
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// ============================================================
+// 예제 4: Hint 생성 (params + body 검증)
+// ============================================================
+router.post(
+  "/themes/:themeId/hints",
+  validate(createHintSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // req.params.themeId와 req.body 모두 검증되었음
+      const { themeId } = req.params;
+      const { code, content, answer, progressRate, order, isActive } = req.body;
+
+      // 비즈니스 로직 실행
+      // const hint = await hintService.create(themeId, req.body);
+
+      res.status(201).json({ message: "힌트가 생성되었습니다" });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// ============================================================
+// 예제 5: Hint 수정 (params + body 검증)
+// ============================================================
+router.put(
+  "/hints/:hintId",
+  validate(updateHintSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { hintId } = req.params;
+      const updateData = req.body;
+
+      // 비즈니스 로직 실행
+      // const hint = await hintService.update(hintId, updateData);
+
+      res.json({ message: "힌트가 수정되었습니다" });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// ============================================================
+// 예제 6: Session 생성 (body만 검증)
+// ============================================================
+router.post(
+  "/sessions",
+  validate(createSessionSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { themeId } = req.body;
+
+      // 비즈니스 로직 실행
+      // const session = await sessionService.create(themeId);
+
+      res.status(201).json({ message: "세션이 생성되었습니다" });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// ============================================================
+// 예제 7: Hint 사용 (params + body 검증)
+// ============================================================
+router.post(
+  "/sessions/:sessionId/hints",
+  validate(useHintSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { sessionId } = req.params;
+      const { code } = req.body;
+
+      // 비즈니스 로직 실행
+      // const hint = await sessionService.useHint(sessionId, code);
+
+      res.json({ message: "힌트를 사용했습니다" });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// ============================================================
+// 예제 8: 관리자 로그인 (body만 검증)
+// ============================================================
+router.post(
+  "/admin/login",
+  validate(adminLoginSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { password } = req.body;
+
+      // 비즈니스 로직 실행
+      // const token = await authService.login(password);
+
+      res.json({ message: "로그인 성공" });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// ============================================================
+// 예제 9: 검증 실패 시 응답 예시
+// ============================================================
+/*
+POST /themes
+{
+  "name": "매우 긴 테마 이름입니다. 이것은 50자를 초과하는 매우 긴 테마 이름입니다.",
+  "playTime": 5
+}
+
+Response (400 Bad Request):
+{
+  "message": "유효하지 않은 요청입니다: name: 테마 이름은 최대 50자까지 가능합니다, playTime: 플레이 시간은 최소 10분 이상이어야 합니다"
+}
+*/
+
+// ============================================================
+// 예제 10: 타입 안전성 활용
+// ============================================================
+import { CreateThemeInput, UpdateHintInput } from "@/shared/schemas";
+
+// 스키마에서 자동으로 타입 추론
+type ThemeBodyType = CreateThemeInput["body"];
+type HintUpdateBodyType = UpdateHintInput["body"];
+
+function processTheme(data: ThemeBodyType) {
+  // data.name, data.playTime 등이 타입 안전하게 사용 가능
+  console.log(`테마: ${data.name}, 플레이 시간: ${data.playTime}분`);
+}
+
+export default router;

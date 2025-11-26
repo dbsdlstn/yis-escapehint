@@ -2,6 +2,8 @@
 import { Router, Request, Response } from "express";
 import { SessionService } from "./session.service";
 import { authenticateToken } from "../../shared/middleware/auth.middleware";
+import { AppError } from "../../shared/errors/AppError";
+import { sendResponse, sendErrorResponse } from "../../shared/utils/response/api-response.util";
 
 const sessionService = new SessionService();
 export const router = Router();
@@ -11,10 +13,15 @@ router.post("/", async (req: Request, res: Response) => {
   try {
     const { themeId } = req.body;
     const session = await sessionService.createSession(themeId);
-    res.status(201).json(session);
+    sendResponse(res, session, "Session created successfully", 201);
     return;
-  } catch (_error) {
-    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  } catch (error) {
+    if (error instanceof AppError) {
+      // Error handling is done by the global error middleware
+      throw error;
+    }
+
+    sendErrorResponse(res, "서버 오류가 발생했습니다.", 500);
     return;
   }
 });
@@ -25,14 +32,15 @@ router.get("/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
     const session = await sessionService.getSession(id);
 
-    if (!session) {
-      return res.status(404).json({ message: "세션을 찾을 수 없습니다." });
+    sendResponse(res, session, "Session retrieved successfully", 200);
+    return;
+  } catch (error) {
+    if (error instanceof AppError) {
+      // Error handling is done by the global error middleware
+      throw error;
     }
 
-    res.json(session);
-    return;
-  } catch (_error) {
-    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    sendErrorResponse(res, "서버 오류가 발생했습니다.", 500);
     return;
   }
 });
@@ -45,14 +53,15 @@ router.post("/:id/hints", async (req: Request, res: Response) => {
 
     const result = await sessionService.submitHint(id, code);
 
-    if (!result) {
-      return res.status(404).json({ message: "힌트를 찾을 수 없습니다." });
+    sendResponse(res, result, "Hint submitted successfully", 200);
+    return;
+  } catch (error) {
+    if (error instanceof AppError) {
+      // Error handling is done by the global error middleware
+      throw error;
     }
 
-    res.json(result);
-    return;
-  } catch (_error) {
-    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    sendErrorResponse(res, "서버 오류가 발생했습니다.", 500);
     return;
   }
 });
@@ -62,10 +71,15 @@ router.get("/", authenticateToken, async (req: Request, res: Response) => {
   try {
     const status = req.query.status as string;
     const sessions = await sessionService.getSessions(status ? { status } : undefined);
-    res.json(sessions);
+    sendResponse(res, sessions, "Sessions retrieved successfully", 200);
     return;
-  } catch (_error) {
-    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  } catch (error) {
+    if (error instanceof AppError) {
+      // Error handling is done by the global error middleware
+      throw error;
+    }
+
+    sendErrorResponse(res, "서버 오류가 발생했습니다.", 500);
     return;
   }
 });
@@ -74,16 +88,17 @@ router.get("/", authenticateToken, async (req: Request, res: Response) => {
 router.delete("/:id", authenticateToken, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const result = await sessionService.endSession(id);
+    await sessionService.endSession(id);
 
-    if (!result) {
-      return res.status(404).json({ message: "세션을 찾을 수 없습니다." });
+    sendResponse(res, null, "Session ended successfully", 200);
+    return;
+  } catch (error) {
+    if (error instanceof AppError) {
+      // Error handling is done by the global error middleware
+      throw error;
     }
 
-    res.status(204).send();
-    return;
-  } catch (_error) {
-    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    sendErrorResponse(res, "서버 오류가 발생했습니다.", 500);
     return;
   }
 });

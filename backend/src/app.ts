@@ -4,10 +4,13 @@ import cors from "cors";
 import helmet from "helmet";
 import logger from "./shared/utils/logger.util";
 import { errorHandler } from "./shared/middleware/error.middleware";
+import { apiLimiter, loginLimiter } from "./shared/middleware/rate-limit.middleware";
 import { router as themeRouter } from "./modules/theme/theme.controller";
 import { router as sessionRouter } from "./modules/session/session.controller";
 import { router as hintRouter } from "./modules/hint/hint.controller";
 import { router as authRouter } from "./modules/auth/auth.controller";
+import { authMiddleware } from "./shared/middleware/auth.middleware";
+import { env } from "./config/env.config";
 
 const app = express();
 
@@ -46,6 +49,9 @@ app.use(express.json());
 // URL 인코딩 파싱 미들웨어
 app.use(express.urlencoded({ extended: true }));
 
+// Rate Limiting 미들웨어 (모든 API 라우트에 적용)
+app.use(apiLimiter);
+
 // 루트 경로 테스트
 app.get("/", (req, res) => {
   logger.info("Root endpoint accessed");
@@ -62,11 +68,11 @@ app.get("/api/health", (req, res) => {
 app.use("/themes", themeRouter);
 app.use("/sessions", sessionRouter);
 
-// 관리자용 API 라우터 등록
+// 관리자용 API 라우터 등록 (인증 필요)
 app.use("/admin/auth", authRouter);
-app.use("/admin/themes", themeRouter);
-app.use("/admin/hints", hintRouter);
-app.use("/admin/sessions", sessionRouter);
+app.use("/admin/themes", authMiddleware, themeRouter);
+app.use("/admin/hints", authMiddleware, hintRouter);
+app.use("/admin/sessions", authMiddleware, sessionRouter);
 
 // 404 핸들러 - 이 부분을 커스텀 에러로 변경
 app.use((req, res, next) => {
@@ -80,7 +86,7 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 // 포트 설정
-const PORT = process.env.PORT || 3000;
+const PORT = env.PORT;
 
 // 서버 시작
 if (require.main === module) {

@@ -1,6 +1,7 @@
 import winston from "winston";
 import path from "path";
 import fs from "fs";
+import { env } from "../../config/env.config";
 
 // 로그 디렉토리 생성
 const logDir = path.join(process.cwd(), "logs");
@@ -9,7 +10,7 @@ if (!fs.existsSync(logDir)) {
 }
 
 // 환경 변수 또는 기본값으로 로그 레벨 설정
-const logLevel = process.env.LOG_LEVEL || "info";
+const logLevel = env.LOG_LEVEL;
 
 // 로그 포맷 정의
 const logFormat = winston.format.combine(
@@ -41,7 +42,7 @@ const logger = winston.createLogger({
 });
 
 // 개발 환경에서는 콘솔에도 로그 출력
-if (process.env.NODE_ENV !== "production") {
+if (env.NODE_ENV !== "production") {
   logger.add(
     new winston.transports.Console({
       format: winston.format.combine(winston.format.colorize(), winston.format.simple()),

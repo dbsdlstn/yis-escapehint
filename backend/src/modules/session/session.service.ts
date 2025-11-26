@@ -1,10 +1,15 @@
 // src/modules/session/session.service.ts
-import { PrismaClient } from "@prisma/client";
-import { HintService } from "../hint/hint.service";
+import { PrismaClient, Hint } from "@prisma/client";
+import {
+  HintNotFoundError,
+  SessionNotFoundError,
+  HintInactiveError,
+  HintThemeMismatchError,
+  ThemeNotFoundError
+} from "../../shared/errors/AppError";
 
 export class SessionService {
   private prisma = new PrismaClient();
-  private hintService = new HintService();
 
   async createSession(themeId: string) {
     // Verify theme exists
@@ -13,7 +18,7 @@ export class SessionService {
     });
 
     if (!theme) {
-      throw new Error("Theme not found");
+      throw new ThemeNotFoundError(themeId);
     }
 
     return this.prisma.gameSession.create({
@@ -27,12 +32,18 @@ export class SessionService {
   }
 
   async getSession(id: string) {
-    return this.prisma.gameSession.findUnique({
+    const session = await this.prisma.gameSession.findUnique({
       where: { id },
       include: {
         theme: true,
       },
     });
+
+    if (!session) {
+      throw new SessionNotFoundError(id);
+    }
+
+    return session;
   }
 
   async getSessions(filter?: { status?: string }) {
@@ -52,20 +63,29 @@ export class SessionService {
     });
 
     if (!session) {
-      return null;
+      throw new SessionNotFoundError(sessionId);
     }
 
-    // Find the hint by code and theme
+    // Find the hint by code
     const hint = await this.prisma.hint.findFirst({
       where: {
-        themeId: session.themeId,
         code: code.toUpperCase(),
-        isActive: true,
       },
     });
 
+    // BR-06: Handle different types of hint code validation failures
     if (!hint) {
-      return null;
+      throw new HintNotFoundError(code);
+    }
+
+    // Check if the hint is for the correct theme
+    if (hint.themeId !== session.themeId) {
+      throw new HintThemeMismatchError(code);
+    }
+
+    // Check if the hint is inactive
+    if (!hint.isActive) {
+      throw new HintInactiveError(code);
     }
 
     // Check if hint was already used in this session
@@ -108,17 +128,20 @@ export class SessionService {
   }
 
   async endSession(id: string) {
-    try {
-      await this.prisma.gameSession.update({
-        where: { id },
-        data: {
-          status: "aborted",
-          endTime: new Date(),
-        },
-      });
-      return true;
-    } catch (_error) {
-      return false;
+    const session = await this.prisma.gameSession.findUnique({
+      where: { id },
+    });
+
+    if (!session) {
+      throw new SessionNotFoundError(id);
     }
+
+    await this.prisma.gameSession.update({
+      where: { id },
+      data: {
+        status: "aborted",
+        endTime: new Date(),
+      },
+    });
   }
 }

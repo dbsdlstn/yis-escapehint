@@ -1,5 +1,6 @@
 // src/modules/hint/hint.service.ts
 import { PrismaClient } from "@prisma/client";
+import { ConflictError, ValidationError } from "../../shared/errors/AppError";
 
 interface CreateHintDto {
   themeId: string;
@@ -40,7 +41,7 @@ export class HintService {
     });
 
     if (existingHint) {
-      throw new Error(`이미 존재하는 힌트 코드입니다: ${hintData.code}`);
+      throw new ConflictError(`이미 존재하는 힌트 코드입니다: ${hintData.code}`);
     }
 
     return this.prisma.hint.create({
@@ -70,7 +71,7 @@ export class HintService {
         });
 
         if (existingHint) {
-          throw new Error(`이미 존재하는 힌트 코드입니다: ${hintData.code}`);
+          throw new ConflictError(`이미 존재하는 힌트 코드입니다: ${hintData.code}`);
         }
       }
     }

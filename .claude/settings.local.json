@@ -13,7 +13,11 @@
       "mcp__postgresql-mcp__pg_execute_sql",
       "Bash(gh:*)",
       "Bash(pwsh:*)",
-      "Bash(powershell.exe -ExecutionPolicy Bypass -File scripts/create-issues.ps1)"
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File scripts/create-issues.ps1)",
+      "Bash(npx ts-node:*)",
+      "Bash(del srctest-error-handler.ts)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []
