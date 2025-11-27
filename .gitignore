@@ -10,14 +10,27 @@ node_modules/
 .env.production.local
 .env.*
 
-# React build output
+# Build outputs
 build/
 dist/
 out/
+public/build/
+assets/build/
 
 # Next.js
 .next
 .cache/
+
+# Backend specific
+backend/dist/
+backend/node_modules/
+backend/logs/
+backend/prisma/migrations/
+
+# Frontend specific
+frontend/dist/
+frontend/build/
+frontend/node_modules/
 
 # Logs
 *.log
@@ -61,10 +74,6 @@ desktop.ini
 *.swo
 *~
 
-# Production builds
-public/build/
-assets/build/
-
 # Sensitive files
 config/secrets.yml
 config/credentials.yml
@@ -90,6 +99,8 @@ pnpm-debug.log*
 coverage/
 coverage/**/*
 .nyc_output/
+test-results/
+playwright-report/
 
 # Production
 public/uploads/
@@ -119,3 +130,18 @@ public/uploads/
 *.sublime-workspace
 .vscode
 .settings
+
+# Docker
+docker-compose*.yml
+.dockerignore
+
+# Swagger
+swagger/
+
+# Prisma
+prisma/migrations/
+*.prisma
+!.prisma/schema.prisma
+
+# TypeScript
+*.tsbuildinfo
