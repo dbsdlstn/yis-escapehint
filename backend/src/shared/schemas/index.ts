@@ -44,7 +44,4 @@ export {
 } from "./session.schema";
 
 // Auth 스키마
-export {
-  adminLoginSchema,
-  type AdminLoginInput,
-} from "./auth.schema";
+export { adminLoginSchema, type AdminLoginInput } from "./auth.schema";

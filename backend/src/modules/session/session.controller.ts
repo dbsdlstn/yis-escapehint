@@ -31,6 +31,13 @@ router.post("/", async (req: Request, res: Response) => {
 router.get("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+
+    // ID 유효성 검사
+    if (!id || id === 'undefined') {
+      sendErrorResponse(res, "세션 ID가 제공되지 않았습니다.", 400);
+      return;
+    }
+
     const session = await sessionService.getSession(id);
 
     sendResponse(res, session, "Session retrieved successfully", 200);
@@ -49,14 +56,24 @@ router.get("/:id", async (req: Request, res: Response) => {
 // 힌트 사용 (플레이어용)
 router.post("/:id/hints", async (req: Request, res: Response) => {
   try {
+    console.log('=== 힌트 제출 요청 디버깅 ===');
+    console.log('req.params:', req.params);
+    console.log('req.body:', req.body);
+    console.log('URL:', req.url);
+    console.log('원본 URL:', req.originalUrl);
+
     const { id } = req.params;
     const { code } = req.body;
+
+    console.log('추출된 세션 ID:', id);
+    console.log('추출된 코드:', code);
 
     const result = await sessionService.submitHint(id, code);
 
     sendResponse(res, result, "Hint submitted successfully", 200);
     return;
   } catch (error) {
+    console.error('힌트 제출 에러:', error);
     if (error instanceof AppError) {
       // Error handling is done by the global error middleware
       throw error;

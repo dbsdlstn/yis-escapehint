@@ -5,9 +5,7 @@ import { z } from "zod";
  */
 export const adminLoginSchema = z.object({
   body: z.object({
-    password: z
-      .string({ message: "비밀번호는 문자열이어야 합니다" })
-      .min(1, "비밀번호는 비어있을 수 없습니다"),
+    password: z.string({ message: "비밀번호는 문자열이어야 합니다" }).min(1, "비밀번호는 비어있을 수 없습니다"),
   }),
 });
 

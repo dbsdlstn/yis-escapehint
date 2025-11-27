@@ -1,12 +1,11 @@
 // src/modules/session/session.service.ts
-import { Hint } from "@prisma/client";
 import { prisma } from "../../shared/utils/prisma.util";
 import {
   HintNotFoundError,
   SessionNotFoundError,
   HintInactiveError,
   HintThemeMismatchError,
-  ThemeNotFoundError
+  ThemeNotFoundError,
 } from "../../shared/errors/AppError";
 
 export class SessionService {
@@ -59,7 +58,7 @@ export class SessionService {
 
   async submitHint(sessionId: string, code: string) {
     // Use a transaction to ensure data consistency
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async tx => {
       // First get the session
       const session = await tx.gameSession.findUnique({
         where: { id: sessionId },
@@ -162,15 +161,15 @@ export class SessionService {
         where: {
           usedAt: {
             gte: startDate,
-            lt: endDate
-          }
-        }
+            lt: endDate,
+          },
+        },
       });
 
       console.log(`Hint usage count from ${startDate} to ${endDate}:`, count); // 디버깅 로그
       return count;
     } catch (error) {
-      console.error('Error fetching today\'s hint usage count:', error);
+      console.error("Error fetching today's hint usage count:", error);
       throw error;
     }
   }

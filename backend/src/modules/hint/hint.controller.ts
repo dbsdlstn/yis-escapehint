@@ -13,13 +13,13 @@ export const hintRouter = router;
 router.get("/themes/:themeId/hints", authenticateToken, async (req: Request, res: Response) => {
   try {
     const { themeId } = req.params;
-    console.log('Received request to get hints for themeId:', themeId); // 디버깅 로그
+    console.log("Received request to get hints for themeId:", themeId); // 디버깅 로그
     const hints = await hintService.getHintsByTheme(themeId);
-    console.log('Successfully retrieved hints:', hints.length); // 디버깅 로그
+    console.log("Successfully retrieved hints:", hints.length); // 디버깅 로그
     sendResponse(res, hints, "Hints retrieved successfully", 200);
     return;
   } catch (error) {
-    console.error('Error in get hints endpoint:', error); // 디버깅 로그
+    console.error("Error in get hints endpoint:", error); // 디버깅 로그
     if (error instanceof AppError) {
       // Error handling is done by the global error middleware
       throw error;
@@ -60,7 +60,7 @@ router.post("/themes/:themeId/hints", authenticateToken, async (req: Request, re
 });
 
 // 관리자용: 힌트 수정
-router.put("/hints/:id", authenticateToken, async (req: Request, res: Response) => {
+router.put("/:id", authenticateToken, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { code, content, answer, progressRate, order, isActive } = req.body;
@@ -88,7 +88,7 @@ router.put("/hints/:id", authenticateToken, async (req: Request, res: Response) 
 });
 
 // 관리자용: 힌트 삭제
-router.delete("/hints/:id", authenticateToken, async (req: Request, res: Response) => {
+router.delete("/:id", authenticateToken, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const result = await hintService.deleteHint(id);
@@ -111,7 +111,7 @@ router.delete("/hints/:id", authenticateToken, async (req: Request, res: Respons
 });
 
 // 관리자용: 힌트 순서 변경
-router.patch("/hints/:id/order", authenticateToken, async (req: Request, res: Response) => {
+router.patch("/:id/order", authenticateToken, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { order } = req.body;

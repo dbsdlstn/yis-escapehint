@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import apiClient from './apiClient';
+import { adminApiClient } from './apiClient';
 
 export interface LoginCredentials {
   password: string;
@@ -13,7 +13,7 @@ export const AuthService = {
   useLogin: () => {
     return useMutation({
       mutationFn: async (credentials: LoginCredentials) => {
-        const response = await apiClient.post<LoginResponse>('/admin/auth/login', credentials);
+        const response = await adminApiClient.post<LoginResponse>('/admin/auth/login', credentials);
         return response.data;
       }
     });

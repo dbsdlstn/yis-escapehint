@@ -17,9 +17,9 @@ export const GameScreen: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
 
-  const { data: theme, isLoading, error } = ThemeService.useGetThemeById(themeId || '');
-  const { mutate: startSession, data: sessionData } = GameSessionService.useStartSession();
-  const { mutate: _submitHint } = HintService.useSubmitHint();
+  const { data: theme, isLoading: isLoadingTheme, error } = ThemeService.useGetThemeById(themeId || '');
+  const { mutate: startSession, data: sessionData, isPending: isCreatingSession } = GameSessionService.useStartSession();
+  const { mutateAsync: _submitHint } = HintService.useSubmitHint();
 
   // Get session from localStorage on component mount
   const savedSessionId = localStorage.getItem('currentSessionId');
@@ -27,35 +27,43 @@ export const GameScreen: React.FC = () => {
     enabled: !!savedSessionId, // Only fetch if savedSessionId exists
   });
 
+  // 세션이 현재 테마와 일치하는지 확인
   useEffect(() => {
-    if (savedSessionId && restoredSession) {
-      // If there's a saved session ID and we've retrieved the session data, restore the timer
-      const serverStartTime = new Date(restoredSession.startTime);
-      const serverPlayTime = theme?.playTime || 0; // in minutes
-      const elapsedSeconds = Math.floor((Date.now() - serverStartTime.getTime()) / 1000);
-      const totalSeconds = serverPlayTime * 60;
-      const remainingTime = Math.max(0, totalSeconds - elapsedSeconds);
+    if (restoredSession && themeId && restoredSession.themeId !== themeId) {
+      // 복구된 세션이 현재 테마와 다르면 localStorage 삭제하고 새 세션 생성
+      console.log('세션 테마 불일치 - 새 세션 생성:', {
+        savedThemeId: restoredSession.themeId,
+        currentThemeId: themeId
+      });
+      localStorage.removeItem('currentSessionId');
+      startSession(themeId);
+    }
+  }, [restoredSession, themeId, startSession]);
 
-      setSessionStartTime(serverStartTime);
-      setTimer(remainingTime);
-    } else if (!savedSessionId && themeId) {
+  // 현재 활성 세션 결정 - 복구된 세션은 테마가 일치할 때만 사용
+  const activeSession = sessionData || (restoredSession?.themeId === themeId ? restoredSession : null);
+  const isLoadingSession = isCreatingSession || isRestoringSession;
+
+  useEffect(() => {
+    if (!savedSessionId && themeId) {
       // If no saved session, start a new session
       startSession(themeId);
     }
-  }, [savedSessionId, restoredSession, themeId, startSession, theme?.playTime]);
+  }, [savedSessionId, themeId, startSession]);
 
-  // Initialize and sync timer when theme and session data are available
+  // Initialize timer when theme and session data are available
   useEffect(() => {
-    if (theme && sessionData && !savedSessionId) {
-      // Only initialize with full time if this is a new session, not a restored one
-      const serverStartTime = new Date(sessionData.startTime);
-      const serverPlayTime = theme.playTime; // in minutes
-      const totalSeconds = serverPlayTime * 60;
+    if (theme && sessionData) {
+      // Initialize with full time based on theme's playTime
+      const serverPlayTime = theme.playTime || 0; // in minutes
+      const totalSeconds = Number.isFinite(serverPlayTime) ? serverPlayTime * 60 : 0;
+      const validatedTotalSeconds = Number.isFinite(totalSeconds) && totalSeconds >= 0 ? totalSeconds : 0;
 
-      setSessionStartTime(serverStartTime);
-      setTimer(totalSeconds); // Start with full time
+      // Set the session start time and initial timer value
+      setSessionStartTime(new Date(sessionData.startTime));
+      setTimer(validatedTotalSeconds);
     }
-  }, [theme, sessionData, savedSessionId]);
+  }, [theme, sessionData]);
 
   // Timer effect with server synchronization
   useEffect(() => {
@@ -121,13 +129,28 @@ export const GameScreen: React.FC = () => {
 
   const handleSubmit = async () => {
     if (hintCode.length !== 4) return;
+    if (!activeSession) {
+      alert('세션이 생성되지 않았습니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      // This would call the actual service to submit the hint
-      // For now, we'll just navigate to the hint display page
-      navigate(`/hint/${hintCode.toUpperCase()}`);
+      console.log('=== 세션 ID 디버깅 ===');
+      console.log('activeSession:', activeSession);
+      console.log('세션 ID:', activeSession.id);
+
+      // 힌트 제출
+      console.log('힌트 제출 요청:', { sessionId: activeSession.id, code: hintCode.toUpperCase() });
+      const result = await _submitHint({
+        sessionId: activeSession.id,
+        code: hintCode.toUpperCase()
+      });
+
+      // 힌트 제출 성공 후, 힌트 내용을 표시하기 위해 힌트 데이터와 진행률을 state로 전달
+      navigate('/hint', { state: result });
     } catch (error) {
+      console.error('힌트 제출 오류:', error);
       alert('힌트를 찾을 수 없습니다. 코드를 확인하세요.');
     } finally {
       setIsSubmitting(false);
@@ -135,12 +158,51 @@ export const GameScreen: React.FC = () => {
   };
 
   const formatTime = (timeInSeconds: number) => {
+    // timeInSeconds가 NaN인 경우 00:00으로 처리
+    if (isNaN(timeInSeconds)) {
+      return '00:00';
+    }
+
     const isNegative = timeInSeconds < 0;
     const absTime = Math.abs(timeInSeconds);
     const minutes = Math.floor(absTime / 60);
     const seconds = absTime % 60;
     return `${isNegative ? '-' : ''}${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
+
+  // 세션 로딩 중이면 로딩 화면 표시
+  if (isLoadingSession || isLoadingTheme) {
+    return (
+      <div className="screen-container">
+        <div className="content-wrapper flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-4">게임 준비 중...</h2>
+            <p className="text-text-secondary">잠시만 기다려주세요</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 세션이 없으면 에러 메시지
+  if (!activeSession) {
+    return (
+      <div className="screen-container">
+        <div className="content-wrapper flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-4 text-red-500">세션 생성 실패</h2>
+            <p className="text-text-secondary mb-4">게임 세션을 생성할 수 없습니다.</p>
+            <button
+              onClick={() => navigate('/')}
+              className="px-6 py-3 bg-accent-white text-dark-primary rounded-xl font-bold"
+            >
+              테마 선택으로 돌아가기
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="screen-container">
@@ -149,7 +211,7 @@ export const GameScreen: React.FC = () => {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-xl font-bold">{theme?.name || '테마 정보 없음'}</h1>
           <div className="text-2xl font-mono">
-            {isLoading ? '로딩 중...' :
+            {isLoadingTheme ? '로딩 중...' :
              !theme ? '테마 없음' :
              formatTime(timer)}
           </div>

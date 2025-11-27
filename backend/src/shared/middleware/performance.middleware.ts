@@ -6,7 +6,7 @@ export const performanceMiddleware = (req: Request, res: Response, next: NextFun
 
   res.on("finish", () => {
     const duration = Date.now() - start;
-    
+
     // Log response time for each request
     logger.http(`${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`, {
       method: req.method,

@@ -2,8 +2,8 @@
   "openapi": "3.0.0",
   "info": {
     "title": "EscapeHint API",
-    "version": "1.0.1",
-    "description": "API specification for the EscapeHint service, providing real-time hints for escape room players and management tools for administrators. This specification has been reviewed and aligned with the PRD, ERD, and wireframes."
+    "version": "1.0.2",
+    "description": "API specification for the EscapeHint service, providing real-time hints for escape room players and management tools for administrators. Updated to reflect actual backend implementation."
   },
   "servers": [
     {
@@ -54,6 +54,25 @@
               }
             }
           }
+        }
+      }
+    },
+    "/themes/{themeId}": {
+      "get": {
+        "tags": ["Player"],
+        "summary": "Get Theme Details",
+        "description": "Retrieves detailed information about a specific theme by its ID.",
+        "parameters": [{ "$ref": "#/components/parameters/ThemeId" }],
+        "responses": {
+          "200": {
+            "description": "Theme details retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Theme" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
         }
       }
     },
@@ -260,7 +279,7 @@
         }
       }
     },
-    "/admin/themes/{themeId}/hints": {
+    "/admin/hints/themes/{themeId}/hints": {
       "get": {
         "tags": ["Admin-Hints"],
         "summary": "Get All Hints for a Theme",
@@ -315,7 +334,7 @@
         }
       }
     },
-    "/admin/hints/{hintId}": {
+    "/admin/hints/hints/{hintId}": {
       "put": {
         "tags": ["Admin-Hints"],
         "summary": "Update a Hint",
@@ -359,7 +378,7 @@
         }
       }
     },
-    "/admin/hints/{hintId}/order": {
+    "/admin/hints/hints/{hintId}/order": {
       "patch": {
         "tags": ["Admin-Hints"],
         "summary": "Update Hint Order",

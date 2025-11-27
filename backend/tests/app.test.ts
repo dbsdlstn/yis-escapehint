@@ -27,7 +27,7 @@ describe("App Setup Tests", () => {
       const response = await request(app).get("/non-existent-route").expect(404);
 
       // Check for custom 404 message in JSON format
-      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty("message");
       expect(response.body.message).toContain("요청하신 경로를 찾을 수 없습니다");
     });
   });

@@ -1,8 +1,8 @@
-import { HintService } from './hint.service';
-import { ConflictError } from '../../shared/errors/AppError';
+import { HintService } from "./hint.service";
+import { ConflictError } from "../../shared/errors/AppError";
 
 // Mock Prisma
-jest.mock('@prisma/client', () => {
+jest.mock("@prisma/client", () => {
   const mockPrisma = {
     hint: {
       findFirst: jest.fn(),
@@ -16,9 +16,9 @@ jest.mock('@prisma/client', () => {
 });
 
 // Now import PrismaClient after the mock
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require("@prisma/client");
 
-describe('HintService', () => {
+describe("HintService", () => {
   let hintService: HintService;
   let mockPrisma: any;
 
@@ -28,20 +28,20 @@ describe('HintService', () => {
     jest.clearAllMocks();
   });
 
-  describe('createHint', () => {
-    it('should successfully create a hint if code is unique within theme (BR-01)', async () => {
+  describe("createHint", () => {
+    it("should successfully create a hint if code is unique within theme (BR-01)", async () => {
       const hintData = {
-        themeId: 'theme1',
-        code: 'HINT01',
-        content: 'This is a hint',
-        answer: 'Answer',
+        themeId: "theme1",
+        code: "HINT01",
+        content: "This is a hint",
+        answer: "Answer",
         progressRate: 10,
         isActive: true,
       };
 
       (mockPrisma.hint.findFirst as jest.Mock).mockResolvedValue(null);
       (mockPrisma.hint.create as jest.Mock).mockResolvedValue({
-        id: 'hint1',
+        id: "hint1",
         ...hintData,
       });
 
@@ -49,37 +49,37 @@ describe('HintService', () => {
 
       expect(mockPrisma.hint.findFirst).toHaveBeenCalledWith({
         where: {
-          themeId: 'theme1',
-          code: 'HINT01',
+          themeId: "theme1",
+          code: "HINT01",
         },
       });
       expect(mockPrisma.hint.create).toHaveBeenCalledWith({
         data: {
           ...hintData,
-          code: 'HINT01',
+          code: "HINT01",
           order: 0,
         },
       });
       expect(result).toEqual({
-        id: 'hint1',
+        id: "hint1",
         ...hintData,
       });
     });
 
-    it('should throw ConflictError if hint code already exists in the same theme (BR-01)', async () => {
+    it("should throw ConflictError if hint code already exists in the same theme (BR-01)", async () => {
       const hintData = {
-        themeId: 'theme1',
-        code: 'HINT01',
-        content: 'This is a hint',
-        answer: 'Answer',
+        themeId: "theme1",
+        code: "HINT01",
+        content: "This is a hint",
+        answer: "Answer",
         progressRate: 10,
         isActive: true,
       };
 
       (mockPrisma.hint.findFirst as jest.Mock).mockResolvedValue({
-        id: 'existingHint',
-        themeId: 'theme1',
-        code: 'HINT01',
+        id: "existingHint",
+        themeId: "theme1",
+        code: "HINT01",
       });
 
       await expect(hintService.createHint(hintData)).rejects.toThrow(ConflictError);
@@ -87,18 +87,18 @@ describe('HintService', () => {
     });
   });
 
-  describe('updateHint', () => {
-    it('should successfully update a hint if new code is unique within theme', async () => {
-      const hintId = 'hint1';
+  describe("updateHint", () => {
+    it("should successfully update a hint if new code is unique within theme", async () => {
+      const hintId = "hint1";
       const updateData = {
-        code: 'NEW_CODE',
-        content: 'Updated content',
+        code: "NEW_CODE",
+        content: "Updated content",
       };
 
       (mockPrisma.hint.findUnique as jest.Mock).mockResolvedValue({
         id: hintId,
-        themeId: 'theme1',
-        code: 'OLD_CODE',
+        themeId: "theme1",
+        code: "OLD_CODE",
       });
       (mockPrisma.hint.findFirst as jest.Mock).mockResolvedValue(null);
       (mockPrisma.hint.update as jest.Mock).mockResolvedValue({
@@ -113,16 +113,16 @@ describe('HintService', () => {
       });
       expect(mockPrisma.hint.findFirst).toHaveBeenCalledWith({
         where: {
-          themeId: 'theme1',
-          code: 'NEW_CODE',
+          themeId: "theme1",
+          code: "NEW_CODE",
           NOT: { id: hintId },
         },
       });
       expect(mockPrisma.hint.update).toHaveBeenCalledWith({
         where: { id: hintId },
         data: {
-          code: 'NEW_CODE',
-          content: 'Updated content',
+          code: "NEW_CODE",
+          content: "Updated content",
         },
       });
       expect(result).toEqual({
@@ -131,43 +131,43 @@ describe('HintService', () => {
       });
     });
 
-    it('should throw ConflictError if new code already exists for the same theme', async () => {
-      const hintId = 'hint1';
+    it("should throw ConflictError if new code already exists for the same theme", async () => {
+      const hintId = "hint1";
       const updateData = {
-        code: 'EXISTING_CODE',
-        content: 'Updated content',
+        code: "EXISTING_CODE",
+        content: "Updated content",
       };
 
       (mockPrisma.hint.findUnique as jest.Mock).mockResolvedValue({
         id: hintId,
-        themeId: 'theme1',
-        code: 'OLD_CODE',
+        themeId: "theme1",
+        code: "OLD_CODE",
       });
       (mockPrisma.hint.findFirst as jest.Mock).mockResolvedValue({
-        id: 'otherHint',
-        themeId: 'theme1',
-        code: 'EXISTING_CODE',
+        id: "otherHint",
+        themeId: "theme1",
+        code: "EXISTING_CODE",
       });
 
       await expect(hintService.updateHint(hintId, updateData)).rejects.toThrow(ConflictError);
       expect(mockPrisma.hint.update).not.toHaveBeenCalled();
     });
 
-    it('should not check for conflicts when code is not being updated', async () => {
-      const hintId = 'hint1';
+    it("should not check for conflicts when code is not being updated", async () => {
+      const hintId = "hint1";
       const updateData = {
-        content: 'Updated content',
+        content: "Updated content",
       };
 
       (mockPrisma.hint.findUnique as jest.Mock).mockResolvedValue({
         id: hintId,
-        themeId: 'theme1',
-        code: 'SAME_CODE',
+        themeId: "theme1",
+        code: "SAME_CODE",
       });
       (mockPrisma.hint.update as jest.Mock).mockResolvedValue({
         id: hintId,
         ...updateData,
-        code: 'SAME_CODE',
+        code: "SAME_CODE",
       });
 
       const result = await hintService.updateHint(hintId, updateData);
@@ -176,13 +176,13 @@ describe('HintService', () => {
       expect(mockPrisma.hint.update).toHaveBeenCalledWith({
         where: { id: hintId },
         data: {
-          content: 'Updated content',
+          content: "Updated content",
         },
       });
       expect(result).toEqual({
         id: hintId,
         ...updateData,
-        code: 'SAME_CODE',
+        code: "SAME_CODE",
       });
     });
   });

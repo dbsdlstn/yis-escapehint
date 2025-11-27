@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import apiClient from './apiClient';
+import { playerApiClient, adminApiClient } from './apiClient';
 import { Theme } from '../types';
 
 export const ThemeService = {
@@ -9,7 +9,7 @@ export const ThemeService = {
       queryKey: ['themes', status],
       queryFn: async () => {
         const params = status ? { status } : {};
-        const response = await apiClient.get<{ success: boolean; data: Theme[] }>('/themes', { params });
+        const response = await playerApiClient.get<{ success: boolean; data: Theme[] }>('/themes', { params });
         return response.data.data;
       }
     });
@@ -20,7 +20,7 @@ export const ThemeService = {
       queryKey: ['theme', themeId],
       queryFn: async () => {
         if (!themeId) return null;
-        const response = await apiClient.get<{ success: boolean; data: Theme }>(`/themes/${themeId}`);
+        const response = await playerApiClient.get<{ success: boolean; data: Theme }>(`/themes/${themeId}`);
         return response.data.data;
       },
       enabled: !!themeId
@@ -32,7 +32,7 @@ export const ThemeService = {
     return useQuery({
       queryKey: ['allThemes'],
       queryFn: async () => {
-        const response = await apiClient.get<{ success: boolean; data: Theme[] }>('/admin/themes');
+        const response = await adminApiClient.get<{ success: boolean; data: Theme[] }>('/admin/themes');
         return response.data.data;
       }
     });
@@ -41,7 +41,7 @@ export const ThemeService = {
   useCreateTheme: () => {
     return useMutation({
       mutationFn: async (themeData: Omit<Theme, 'id' | 'hintCount' | 'createdAt' | 'updatedAt'>) => {
-        const response = await apiClient.post<{ success: boolean; data: Theme }>('/admin/themes', themeData);
+        const response = await adminApiClient.post<{ success: boolean; data: Theme }>('/admin/themes', themeData);
         return response.data.data;
       }
     });
@@ -50,7 +50,7 @@ export const ThemeService = {
   useUpdateTheme: () => {
     return useMutation({
       mutationFn: async ({ id, ...themeData }: Theme) => {
-        const response = await apiClient.put<{ success: boolean; data: Theme }>(`/admin/themes/${id}`, themeData);
+        const response = await adminApiClient.put<{ success: boolean; data: Theme }>(`/admin/themes/${id}`, themeData);
         return response.data.data;
       }
     });
@@ -59,7 +59,7 @@ export const ThemeService = {
   useDeleteTheme: () => {
     return useMutation({
       mutationFn: async (themeId: string) => {
-        await apiClient.delete(`/admin/themes/${themeId}`);
+        await adminApiClient.delete(`/admin/themes/${themeId}`);
       }
     });
   }

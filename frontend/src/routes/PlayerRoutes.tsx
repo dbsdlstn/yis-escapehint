@@ -9,7 +9,7 @@ export const PlayerRoutes: React.FC = () => {
     <Routes>
       <Route path="/" element={<ThemeSelector />} />
       <Route path="/game/:themeId" element={<GameScreen />} />
-      <Route path="/hint/:hintId" element={<HintDisplay />} />
+      <Route path="/hint" element={<HintDisplay />} />
     </Routes>
   );
 };

@@ -5,9 +5,7 @@ import { z } from "zod";
  */
 export const createSessionSchema = z.object({
   body: z.object({
-    themeId: z
-      .string({ message: "테마 ID는 문자열이어야 합니다" })
-      .uuid("유효한 UUID 형식이어야 합니다"),
+    themeId: z.string({ message: "테마 ID는 문자열이어야 합니다" }).uuid("유효한 UUID 형식이어야 합니다"),
   }),
 });
 
@@ -16,9 +14,7 @@ export const createSessionSchema = z.object({
  */
 export const sessionIdParamSchema = z.object({
   params: z.object({
-    sessionId: z
-      .string({ message: "세션 ID는 필수입니다" })
-      .uuid("유효한 UUID 형식이어야 합니다"),
+    sessionId: z.string({ message: "세션 ID는 필수입니다" }).uuid("유효한 UUID 형식이어야 합니다"),
   }),
 });
 
@@ -27,14 +23,10 @@ export const sessionIdParamSchema = z.object({
  */
 export const useHintSchema = z.object({
   params: z.object({
-    sessionId: z
-      .string({ message: "세션 ID는 필수입니다" })
-      .uuid("유효한 UUID 형식이어야 합니다"),
+    sessionId: z.string({ message: "세션 ID는 필수입니다" }).uuid("유효한 UUID 형식이어야 합니다"),
   }),
   body: z.object({
-    code: z
-      .string({ message: "힌트 코드는 문자열이어야 합니다" })
-      .min(1, "힌트 코드는 비어있을 수 없습니다"),
+    code: z.string({ message: "힌트 코드는 문자열이어야 합니다" }).min(1, "힌트 코드는 비어있을 수 없습니다"),
   }),
 });
 
@@ -44,11 +36,9 @@ export const useHintSchema = z.object({
 export const getSessionsQuerySchema = z.object({
   query: z.object({
     status: z
-      .union([
-        z.literal("in_progress"),
-        z.literal("completed"),
-        z.literal("aborted")
-      ], { message: "status는 'in_progress', 'completed', 'aborted' 중 하나여야 합니다" })
+      .union([z.literal("in_progress"), z.literal("completed"), z.literal("aborted")], {
+        message: "status는 'in_progress', 'completed', 'aborted' 중 하나여야 합니다",
+      })
       .optional(),
   }),
 });

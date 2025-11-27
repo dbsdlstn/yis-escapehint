@@ -1,5 +1,5 @@
 // src/modules/auth/auth.service.ts
-import { hashPassword, comparePassword } from "../../shared/utils/bcrypt.util";
+import { comparePassword } from "../../shared/utils/bcrypt.util";
 import { generateToken, verifyToken } from "../../shared/utils/jwt.util";
 import logger from "../../shared/utils/logger.util";
 import { UnauthorizedError } from "../../shared/errors/AppError";
@@ -11,6 +11,7 @@ export class AuthService {
   constructor() {
     // 기본 비밀번호를 미리 해싱하여 초기화 (동기 방식 유지)
     const defaultPassword = env.ADMIN_PASSWORD;
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const bcrypt = require("bcrypt");
     this.storedHashedPassword = bcrypt.hashSync(defaultPassword, 10);
   }

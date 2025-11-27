@@ -41,10 +41,15 @@ router.get("/me", authMiddleware, async (req: Request, res: Response) => {
     const user = (req as any).user;
 
     // 민감 정보 제외하고 필요한 사용자 정보만 반환
-    sendResponse(res, {
-      userId: user.userId,
-      role: user.role
-    }, "User info retrieved successfully", 200);
+    sendResponse(
+      res,
+      {
+        userId: user.userId,
+        role: user.role,
+      },
+      "User info retrieved successfully",
+      200
+    );
   } catch (error) {
     logger.error("Get user info error:", error);
     sendErrorResponse(res, "서버 오류가 발생했습니다.", 500);

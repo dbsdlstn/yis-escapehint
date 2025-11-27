@@ -14,18 +14,9 @@ export const createThemeSchema = z.object({
       .int("플레이 시간은 정수여야 합니다")
       .min(10, "플레이 시간은 최소 10분 이상이어야 합니다")
       .max(180, "플레이 시간은 최대 180분까지 가능합니다"),
-    description: z
-      .string()
-      .optional()
-      .nullable(),
-    isActive: z
-      .boolean({ message: "활성화 상태는 boolean이어야 합니다" })
-      .default(true)
-      .optional(),
-    difficulty: z
-      .string()
-      .optional()
-      .nullable(),
+    description: z.string().optional().nullable(),
+    isActive: z.boolean({ message: "활성화 상태는 boolean이어야 합니다" }).default(true).optional(),
+    difficulty: z.string().optional().nullable(),
   }),
 });
 
@@ -34,9 +25,7 @@ export const createThemeSchema = z.object({
  */
 export const updateThemeSchema = z.object({
   params: z.object({
-    themeId: z
-      .string({ message: "테마 ID는 필수입니다" })
-      .uuid("유효한 UUID 형식이어야 합니다"),
+    themeId: z.string({ message: "테마 ID는 필수입니다" }).uuid("유효한 UUID 형식이어야 합니다"),
   }),
   body: z.object({
     name: z
@@ -50,17 +39,9 @@ export const updateThemeSchema = z.object({
       .min(10, "플레이 시간은 최소 10분 이상이어야 합니다")
       .max(180, "플레이 시간은 최대 180분까지 가능합니다")
       .optional(),
-    description: z
-      .string()
-      .optional()
-      .nullable(),
-    isActive: z
-      .boolean()
-      .optional(),
-    difficulty: z
-      .string()
-      .optional()
-      .nullable(),
+    description: z.string().optional().nullable(),
+    isActive: z.boolean().optional(),
+    difficulty: z.string().optional().nullable(),
   }),
 });
 
@@ -69,9 +50,7 @@ export const updateThemeSchema = z.object({
  */
 export const themeIdParamSchema = z.object({
   params: z.object({
-    themeId: z
-      .string({ message: "테마 ID는 필수입니다" })
-      .uuid("유효한 UUID 형식이어야 합니다"),
+    themeId: z.string({ message: "테마 ID는 필수입니다" }).uuid("유효한 UUID 형식이어야 합니다"),
   }),
 });
 

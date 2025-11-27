@@ -14,11 +14,7 @@ export interface ApiResponse<T = any> {
  * @param statusCode HTTP 상태 코드 (기본값: 200)
  * @returns 표준화된 성공 응답 객체
  */
-export function createSuccessResponse<T = any>(
-  data?: T,
-  message?: string,
-  statusCode: number = 200
-): ApiResponse<T> {
+export function createSuccessResponse<T = any>(data?: T, message?: string, statusCode: number = 200): ApiResponse<T> {
   return {
     success: true,
     message,
@@ -35,11 +31,7 @@ export function createSuccessResponse<T = any>(
  * @param data 추가 데이터 (선택)
  * @returns 표준화된 실패 응답 객체
  */
-export function createErrorResponse(
-  message: string,
-  statusCode: number = 400,
-  data?: any
-): ApiResponse {
+export function createErrorResponse(message: string, statusCode: number = 400, data?: any): ApiResponse {
   return {
     success: false,
     message,

@@ -33,7 +33,7 @@ export const apiLimiter = rateLimit({
   },
 
   // 요청이 거부되기 전에 호출되는 함수 (선택적)
-  skip: (req) => {
+  skip: req => {
     // 특정 IP는 Rate Limiting에서 제외 (예: 개발 환경)
     if (env.NODE_ENV === "development") {
       // 개발 환경에서는 localhost는 제외

@@ -1,8 +1,27 @@
-import { PrismaClient } from '@prisma/client';
+// This file seeds the database with initial data using the same Prisma initialization as the application
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@prisma/client";
+import { Pool } from "pg";
 
-const prisma = new PrismaClient();
+// Set environment variables directly for this script
+process.env.DATABASE_URL = "postgresql://postgres:123123@localhost:5432/escapehint";
+
+// Create the PostgreSQL connection pool
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+// Create the Prisma adapter
+const adapter = new PrismaPg(pool);
+
+// Create Prisma client with the adapter
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
+  // Clear existing data
+  await prisma.hint.deleteMany({});
+  await prisma.theme.deleteMany({});
+
   // 테마 3개 생성
   const themes = await Promise.all([
     prisma.theme.create({
@@ -141,13 +160,16 @@ async function main() {
       },
     }),
   ]);
+
+  console.log('✅ Database seeded successfully with proper Korean text encoding!');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('❌ Error seeding database:', e);
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
+    console.log('Disconnected from database');
   });

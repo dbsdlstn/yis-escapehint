@@ -145,3 +145,7 @@ prisma/migrations/
 
 # TypeScript
 *.tsbuildinfo
+
+# Windows system files
+nul
+backend/nul

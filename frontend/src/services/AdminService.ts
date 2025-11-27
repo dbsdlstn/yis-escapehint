@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import apiClient from './apiClient';
+import { adminApiClient } from './apiClient';
 import { GameSession } from '../types';
 
 export interface DashboardStats {
@@ -14,7 +14,7 @@ export const AdminService = {
       queryKey: ['admin-sessions', status],
       queryFn: async () => {
         const params = status ? { status } : {};
-        const response = await apiClient.get<{ data: GameSession[] }>('/admin/sessions', { params });
+        const response = await adminApiClient.get<{ data: GameSession[] }>('/admin/sessions', { params });
         return response.data.data; // 표준 응답 구조에서 실제 데이터만 반환
       }
     });
@@ -25,7 +25,7 @@ export const AdminService = {
     return useQuery({
       queryKey: ['dashboard-stats'],
       queryFn: async () => {
-        const response = await apiClient.get<{ data: DashboardStats }>('/admin/themes/stats');
+        const response = await adminApiClient.get<{ data: DashboardStats }>('/admin/themes/stats');
         console.log('Dashboard stats response:', response.data); // 디버깅 로그
         return response.data.data;
       }
@@ -37,7 +37,7 @@ export const AdminService = {
       queryKey: ['admin-session', sessionId],
       queryFn: async () => {
         if (!sessionId) return null;
-        const response = await apiClient.get<GameSession>(`/sessions/${sessionId}`);
+        const response = await adminApiClient.get<GameSession>(`/sessions/${sessionId}`);
         return response.data;
       },
       enabled: !!sessionId
@@ -47,7 +47,7 @@ export const AdminService = {
   useForceEndSession: () => {
     return useMutation({
       mutationFn: async (sessionId: string) => {
-        await apiClient.delete(`/admin/sessions/${sessionId}`);
+        await adminApiClient.delete(`/admin/sessions/${sessionId}`);
       }
     });
   }

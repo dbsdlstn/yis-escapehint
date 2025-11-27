@@ -3,6 +3,7 @@ import { verifyToken } from "../utils/jwt.util";
 import { UnauthorizedError } from "../errors/AppError";
 
 // Request 타입 확장 (타입 정의 파일도 있지만 명시적으로 선언)
+// eslint-disable-next-line @typescript-eslint/no-namespace
 declare global {
   namespace Express {
     interface Request {
@@ -20,11 +21,7 @@ declare global {
  * Authorization 헤더에서 Bearer 토큰을 추출하고 검증합니다.
  * 검증 성공 시 req.user에 디코딩된 페이로드를 저장합니다.
  */
-export const authMiddleware = (
-  req: Request,
-  _res: Response,
-  next: NextFunction
-): void => {
+export const authMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
   try {
     // Authorization 헤더 추출
     const authHeader = req.headers.authorization;

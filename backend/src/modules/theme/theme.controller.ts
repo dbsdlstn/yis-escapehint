@@ -15,7 +15,11 @@ const router = Router();
 const createThemeSchema = z.object({
   name: z.string().min(1, "Theme name is required").max(50, "Theme name must be less than 50 characters"),
   description: z.string().nullable().optional(),
-  playTime: z.number().int().min(10, "Play time must be at least 10 minutes").max(180, "Play time must be at most 180 minutes"),
+  playTime: z
+    .number()
+    .int()
+    .min(10, "Play time must be at least 10 minutes")
+    .max(180, "Play time must be at most 180 minutes"),
   isActive: z.boolean().default(true),
   difficulty: z.string().nullable().optional(),
 });
@@ -23,7 +27,12 @@ const createThemeSchema = z.object({
 const updateThemeSchema = z.object({
   name: z.string().min(1, "Theme name is required").max(50, "Theme name must be less than 50 characters").optional(),
   description: z.string().nullable().optional(),
-  playTime: z.number().int().min(10, "Play time must be at least 10 minutes").max(180, "Play time must be at most 180 minutes").optional(),
+  playTime: z
+    .number()
+    .int()
+    .min(10, "Play time must be at least 10 minutes")
+    .max(180, "Play time must be at most 180 minutes")
+    .optional(),
   isActive: z.boolean().optional(),
   difficulty: z.string().nullable().optional(),
 });
@@ -106,10 +115,10 @@ adminThemeRouter.post("/", authenticateToken, async (req: Request, res: Response
     return;
   } catch (error) {
     if (error instanceof Error) {
-      if (error.message === 'A theme with this name already exists') {
+      if (error.message === "A theme with this name already exists") {
         return sendErrorResponse(res, error.message, 409);
       }
-      if (error.message.includes('Play time must be between')) {
+      if (error.message.includes("Play time must be between")) {
         return sendErrorResponse(res, error.message, 400);
       }
     }
@@ -150,10 +159,10 @@ adminThemeRouter.put("/:id", authenticateToken, async (req: Request, res: Respon
     return;
   } catch (error) {
     if (error instanceof Error) {
-      if (error.message === 'A theme with this name already exists') {
+      if (error.message === "A theme with this name already exists") {
         return sendErrorResponse(res, error.message, 409);
       }
-      if (error.message.includes('Play time must be between')) {
+      if (error.message.includes("Play time must be between")) {
         return sendErrorResponse(res, error.message, 400);
       }
     }
@@ -174,11 +183,12 @@ adminThemeRouter.delete("/:id", authenticateToken, async (req: Request, res: Res
       return sendErrorResponse(res, "테마를 찾을 수 없습니다.", 404);
     }
 
-    sendResponse(res, null, "Theme deleted successfully", 200); // Changed to 200 with message since 204 doesn't have body
+    // Changed to 200 with message since 204 doesn't have body
+    sendResponse(res, null, "Theme deleted successfully", 200);
     return;
   } catch (error) {
     if (error instanceof Error) {
-      if (error.message === 'Cannot delete theme with in-progress game sessions') {
+      if (error.message === "Cannot delete theme with in-progress game sessions") {
         return sendErrorResponse(res, error.message, 409);
       }
     }
@@ -208,10 +218,15 @@ adminThemeRouter.get("/stats", authenticateToken, async (req: Request, res: Resp
     const hintUsageCount = await sessionService.getTodaysHintUsageCount(today, tomorrow);
     logger.info("Hint usage count:", hintUsageCount);
 
-    sendResponse(res, {
-      themeCount,
-      hintUsageCount
-    }, "Dashboard stats retrieved successfully", 200);
+    sendResponse(
+      res,
+      {
+        themeCount,
+        hintUsageCount,
+      },
+      "Dashboard stats retrieved successfully",
+      200
+    );
     return;
   } catch (error) {
     logger.error("Error in dashboard stats endpoint:", error);

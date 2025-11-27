@@ -1,6 +1,6 @@
 // src/modules/theme/theme.service.ts
 import { prisma } from "../../shared/utils/prisma.util";
-import logger from '../../shared/utils/logger.util';
+import logger from "../../shared/utils/logger.util";
 
 interface CreateThemeDto {
   name: string;
@@ -38,7 +38,7 @@ export class ThemeService {
         hintCount: theme._count.hints,
       }));
     } catch (error) {
-      logger.error('Error fetching playable themes:', error);
+      logger.error("Error fetching playable themes:", error);
       throw error;
     }
   }
@@ -59,7 +59,7 @@ export class ThemeService {
         hintCount: theme._count.hints,
       }));
     } catch (error) {
-      logger.error('Error fetching all themes:', error);
+      logger.error("Error fetching all themes:", error);
       throw error;
     }
   }
@@ -93,29 +93,29 @@ export class ThemeService {
     try {
       // Validate input data
       if (!themeData.name || themeData.name.trim().length === 0) {
-        throw new Error('Theme name is required');
+        throw new Error("Theme name is required");
       }
 
       if (themeData.playTime <= 0) {
-        throw new Error('Play time must be greater than 0');
+        throw new Error("Play time must be greater than 0");
       }
 
       if (themeData.playTime < 10 || themeData.playTime > 180) {
-        throw new Error('Play time must be between 10 and 180 minutes');
+        throw new Error("Play time must be between 10 and 180 minutes");
       }
 
       // Check if a theme with the same name already exists (case-insensitive)
       const existingTheme = await this.prisma.theme.findFirst({
         where: {
           name: {
-            mode: 'insensitive',
+            mode: "insensitive",
             equals: themeData.name.trim(),
           },
         },
       });
 
       if (existingTheme) {
-        throw new Error('A theme with this name already exists');
+        throw new Error("A theme with this name already exists");
       }
 
       const theme = await this.prisma.theme.create({
@@ -134,7 +134,7 @@ export class ThemeService {
         hintCount: 0,
       };
     } catch (error) {
-      logger.error('Error creating theme:', error);
+      logger.error("Error creating theme:", error);
       throw error;
     }
   }
@@ -160,14 +160,14 @@ export class ThemeService {
 
       if (themeData.name !== undefined) {
         if (!themeData.name || themeData.name.trim().length === 0) {
-          throw new Error('Theme name is required');
+          throw new Error("Theme name is required");
         }
 
         // Check if a theme with the same name already exists (excluding current theme)
         const existingThemeWithSameName = await this.prisma.theme.findFirst({
           where: {
             name: {
-              mode: 'insensitive',
+              mode: "insensitive",
               equals: themeData.name.trim(),
             },
             id: {
@@ -177,7 +177,7 @@ export class ThemeService {
         });
 
         if (existingThemeWithSameName) {
-          throw new Error('A theme with this name already exists');
+          throw new Error("A theme with this name already exists");
         }
 
         updateData.name = themeData.name.trim();
@@ -185,7 +185,7 @@ export class ThemeService {
 
       if (themeData.playTime !== undefined) {
         if (themeData.playTime < 10 || themeData.playTime > 180) {
-          throw new Error('Play time must be between 10 and 180 minutes');
+          throw new Error("Play time must be between 10 and 180 minutes");
         }
         updateData.playTime = themeData.playTime;
       }
@@ -226,7 +226,7 @@ export class ThemeService {
         include: {
           sessions: {
             where: {
-              status: 'in_progress',
+              status: "in_progress",
             },
           },
         },
@@ -238,7 +238,7 @@ export class ThemeService {
 
       // If there are in-progress sessions, we should not allow deletion
       if (themeWithSessions.sessions.length > 0) {
-        throw new Error('Cannot delete theme with in-progress game sessions');
+        throw new Error("Cannot delete theme with in-progress game sessions");
       }
 
       // Delete the theme (Prisma will handle cascade deletion for hints due to the schema)
@@ -249,7 +249,7 @@ export class ThemeService {
       logger.info(`Theme with id ${id} deleted successfully`);
       return true;
     } catch (error) {
-      if (error instanceof Error && error.message === 'Cannot delete theme with in-progress game sessions') {
+      if (error instanceof Error && error.message === "Cannot delete theme with in-progress game sessions") {
         logger.warn(`Attempt to delete theme ${id} with in-progress sessions`);
         throw error;
       }
@@ -263,7 +263,7 @@ export class ThemeService {
     try {
       return await this.prisma.theme.count();
     } catch (error) {
-      logger.error('Error fetching theme count:', error);
+      logger.error("Error fetching theme count:", error);
       throw error;
     }
   }

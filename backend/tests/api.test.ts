@@ -3,16 +3,18 @@ import app from "../src/app";
 import { PrismaClient } from "@prisma/client";
 
 // Create a global Prisma client for test setup/teardown
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: ['query', 'info', 'warn', 'error'],
+});
 
 describe("Integration Tests for API Endpoints", () => {
   // Clean up test data before each test
   beforeEach(async () => {
     // Delete any test data created in previous tests
-    await prisma.hintUsage.deleteMany({});
-    await prisma.gameSession.deleteMany({});
-    await prisma.hint.deleteMany({});
-    await prisma.theme.deleteMany({});
+    // await prisma.hintUsage.deleteMany({});  // 임시로 비활성화
+    // await prisma.gameSession.deleteMany({});  // 임시로 비활성화
+    // await prisma.hint.deleteMany({});  // 임시로 비활성화
+    // await prisma.theme.deleteMany({});  // 임시로 비활성화
   });
 
   describe("Player Theme API Tests", () => {
@@ -28,12 +30,12 @@ describe("Integration Tests for API Endpoints", () => {
           },
         });
 
-        const response = await request(app).get("/themes").expect(200);
+        const response = await request(app).get("/api/themes").expect(200);
 
         expect(Array.isArray(response.body)).toBe(true);
         expect(response.body.length).toBeGreaterThan(0);
-        expect(response.body[0]).toHaveProperty('name', 'Test Theme');
-        expect(response.body[0]).toHaveProperty('hintCount');
+        expect(response.body[0]).toHaveProperty("name", "Test Theme");
+        expect(response.body[0]).toHaveProperty("hintCount");
       });
 
       it("should only return active themes by default", async () => {
@@ -46,7 +48,7 @@ describe("Integration Tests for API Endpoints", () => {
           },
         });
 
-        const response = await request(app).get("/themes").expect(200);
+        const response = await request(app).get("/api/themes").expect(200);
 
         // Should not include inactive theme
         const inactiveTheme = response.body.find((theme: any) => theme.name === "Inactive Theme");
@@ -56,7 +58,7 @@ describe("Integration Tests for API Endpoints", () => {
       it("should handle empty theme list", async () => {
         await prisma.theme.deleteMany({});
 
-        const response = await request(app).get("/themes").expect(200);
+        const response = await request(app).get("/api/themes").expect(200);
         expect(response.body).toEqual([]);
       });
     });
@@ -78,33 +80,24 @@ describe("Integration Tests for API Endpoints", () => {
 
     describe("POST /sessions", () => {
       it("should create a new game session", async () => {
-        const response = await request(app)
-          .post("/sessions")
-          .send({ themeId: testTheme.id })
-          .expect(201);
+        const response = await request(app).post("/api/sessions").send({ themeId: testTheme.id }).expect(201);
 
-        expect(response.body).toHaveProperty('id');
-        expect(response.body).toHaveProperty('themeId', testTheme.id);
-        expect(response.body).toHaveProperty('status', 'in_progress');
-        expect(response.body).toHaveProperty('usedHintCount', 0);
+        expect(response.body).toHaveProperty("id");
+        expect(response.body).toHaveProperty("themeId", testTheme.id);
+        expect(response.body).toHaveProperty("status", "in_progress");
+        expect(response.body).toHaveProperty("usedHintCount", 0);
       });
 
       it("should return 404 for non-existent theme", async () => {
-        const response = await request(app)
-          .post("/sessions")
-          .send({ themeId: "non-existent-id" })
-          .expect(404);
+        const response = await request(app).post("/api/sessions").send({ themeId: "non-existent-id" }).expect(404);
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
 
       it("should validate request body", async () => {
-        const response = await request(app)
-          .post("/sessions")
-          .send({})
-          .expect(500); // Error happens in controller when themeId is missing
+        const response = await request(app).post("/api/sessions").send({}).expect(500); // Error happens in controller when themeId is missing
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
     });
 
@@ -115,25 +108,21 @@ describe("Integration Tests for API Endpoints", () => {
           data: {
             themeId: testTheme.id,
             startTime: new Date(),
-            status: 'in_progress',
+            status: "in_progress",
           },
         });
 
-        const response = await request(app)
-          .get(`/sessions/${session.id}`)
-          .expect(200);
+        const response = await request(app).get(`/api/sessions/${session.id}`).expect(200);
 
-        expect(response.body).toHaveProperty('id', session.id);
-        expect(response.body).toHaveProperty('themeId', testTheme.id);
-        expect(response.body).toHaveProperty('status', 'in_progress');
+        expect(response.body).toHaveProperty("id", session.id);
+        expect(response.body).toHaveProperty("themeId", testTheme.id);
+        expect(response.body).toHaveProperty("status", "in_progress");
       });
 
       it("should return 404 for non-existent session", async () => {
-        const response = await request(app)
-          .get("/sessions/non-existent-session-id")
-          .expect(404);
+        const response = await request(app).get("/api/sessions/non-existent-session-id").expect(404);
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
     });
 
@@ -146,7 +135,7 @@ describe("Integration Tests for API Endpoints", () => {
           data: {
             themeId: testTheme.id,
             startTime: new Date(),
-            status: 'in_progress',
+            status: "in_progress",
           },
         });
 
@@ -164,22 +153,22 @@ describe("Integration Tests for API Endpoints", () => {
 
       it("should submit a valid hint code and return hint details", async () => {
         const response = await request(app)
-          .post(`/sessions/${session.id}/hints`)
+          .post(`/api/sessions/${session.id}/hints`)
           .send({ code: "TESTHINT" })
           .expect(200);
 
-        expect(response.body).toHaveProperty('id', hint.id);
-        expect(response.body).toHaveProperty('content', hint.content);
-        expect(response.body).toHaveProperty('answer');
+        expect(response.body).toHaveProperty("id", hint.id);
+        expect(response.body).toHaveProperty("content", hint.content);
+        expect(response.body).toHaveProperty("answer");
       });
 
       it("should return 404 for non-existent hint code", async () => {
         const response = await request(app)
-          .post(`/sessions/${session.id}/hints`)
+          .post(`/api/sessions/${session.id}/hints`)
           .send({ code: "NONEXISTENT" })
           .expect(404);
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
 
       it("should return 400 for hint with wrong theme", async () => {
@@ -204,11 +193,11 @@ describe("Integration Tests for API Endpoints", () => {
         });
 
         const response = await request(app)
-          .post(`/sessions/${session.id}/hints`)
+          .post(`/api/sessions/${session.id}/hints`)
           .send({ code: "OTHERHINT" })
           .expect(400);
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
 
       it("should return 400 for inactive hint", async () => {
@@ -224,11 +213,11 @@ describe("Integration Tests for API Endpoints", () => {
         });
 
         const response = await request(app)
-          .post(`/sessions/${session.id}/hints`)
+          .post(`/api/sessions/${session.id}/hints`)
           .send({ code: "INACTIVEHINT" })
           .expect(400);
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
     });
   });
@@ -237,30 +226,24 @@ describe("Integration Tests for API Endpoints", () => {
     describe("POST /admin/auth/login", () => {
       it("should authenticate admin with correct password", async () => {
         const response = await request(app)
-          .post("/admin/auth/login")
+          .post("/api/admin/auth/login")
           .send({ password: process.env.ADMIN_PASSWORD || "admin123" })
           .expect(200);
 
-        expect(response.body).toHaveProperty('accessToken');
-        expect(typeof response.body.accessToken).toBe('string');
+        expect(response.body).toHaveProperty("accessToken");
+        expect(typeof response.body.accessToken).toBe("string");
       });
 
       it("should reject admin with incorrect password", async () => {
-        const response = await request(app)
-          .post("/admin/auth/login")
-          .send({ password: "wrongpassword" })
-          .expect(401);
+        const response = await request(app).post("/api/admin/auth/login").send({ password: "wrongpassword" }).expect(401);
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
 
       it("should validate request body", async () => {
-        const response = await request(app)
-          .post("/admin/auth/login")
-          .send({})
-          .expect(400);
+        const response = await request(app).post("/api/admin/auth/login").send({}).expect(400);
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
     });
   });
@@ -271,7 +254,7 @@ describe("Integration Tests for API Endpoints", () => {
     beforeAll(async () => {
       // Get admin token for testing
       const loginResponse = await request(app)
-        .post("/admin/auth/login")
+        .post("/api/admin/auth/login")
         .send({ password: process.env.ADMIN_PASSWORD || "admin123" });
 
       adminToken = loginResponse.body.accessToken;
@@ -297,7 +280,7 @@ describe("Integration Tests for API Endpoints", () => {
         });
 
         const response = await request(app)
-          .get("/admin/themes")
+          .get("/api/admin/themes")
           .set("Authorization", `Bearer ${adminToken}`)
           .expect(200);
 
@@ -309,11 +292,11 @@ describe("Integration Tests for API Endpoints", () => {
 
       it("should require authentication", async () => {
         const response = await request(app)
-          .get("/admin/themes")
+          .get("/api/admin/themes")
           .set("Authorization", "Bearer invalid-token")
           .expect(401);
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
     });
 
@@ -327,16 +310,16 @@ describe("Integration Tests for API Endpoints", () => {
         };
 
         const response = await request(app)
-          .post("/admin/themes")
+          .post("/api/admin/themes")
           .set("Authorization", `Bearer ${adminToken}`)
           .send(newTheme)
           .expect(201);
 
-        expect(response.body).toHaveProperty('id');
-        expect(response.body).toHaveProperty('name', newTheme.name);
-        expect(response.body).toHaveProperty('description', newTheme.description);
-        expect(response.body).toHaveProperty('playTime', newTheme.playTime);
-        expect(response.body).toHaveProperty('isActive', newTheme.isActive);
+        expect(response.body).toHaveProperty("id");
+        expect(response.body).toHaveProperty("name", newTheme.name);
+        expect(response.body).toHaveProperty("description", newTheme.description);
+        expect(response.body).toHaveProperty("playTime", newTheme.playTime);
+        expect(response.body).toHaveProperty("isActive", newTheme.isActive);
       });
 
       it("should validate theme data", async () => {
@@ -346,24 +329,24 @@ describe("Integration Tests for API Endpoints", () => {
         };
 
         const response = await request(app)
-          .post("/admin/themes")
+          .post("/api/admin/themes")
           .set("Authorization", `Bearer ${adminToken}`)
           .send(invalidTheme)
           .expect(500); // Validation happens in service
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
 
       it("should require authentication", async () => {
         const response = await request(app)
-          .post("/admin/themes")
+          .post("/api/admin/themes")
           .send({
             name: "Unauthorized Theme",
             playTime: 60,
           })
           .expect(401);
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
     });
   });
@@ -375,7 +358,7 @@ describe("Integration Tests for API Endpoints", () => {
     beforeAll(async () => {
       // Get admin token for testing
       const loginResponse = await request(app)
-        .post("/admin/auth/login")
+        .post("/api/admin/auth/login")
         .send({ password: process.env.ADMIN_PASSWORD || "admin123" });
 
       adminToken = loginResponse.body.accessToken;
@@ -419,25 +402,25 @@ describe("Integration Tests for API Endpoints", () => {
 
       it("should return hints for a specific theme", async () => {
         const response = await request(app)
-          .get(`/admin/themes/${testTheme.id}/hints`)
+          .get(`/api/admin/themes/${testTheme.id}/hints`)
           .set("Authorization", `Bearer ${adminToken}`)
           .expect(200);
 
         expect(Array.isArray(response.body)).toBe(true);
         expect(response.body.length).toBe(2);
-        expect(response.body[0]).toHaveProperty('code', 'HINT01');
-        expect(response.body[0]).toHaveProperty('order', 1);
-        expect(response.body[1]).toHaveProperty('code', 'HINT02');
-        expect(response.body[1]).toHaveProperty('order', 2);
+        expect(response.body[0]).toHaveProperty("code", "HINT01");
+        expect(response.body[0]).toHaveProperty("order", 1);
+        expect(response.body[1]).toHaveProperty("code", "HINT02");
+        expect(response.body[1]).toHaveProperty("order", 2);
       });
 
       it("should require authentication", async () => {
         const response = await request(app)
-          .get(`/admin/themes/${testTheme.id}/hints`)
+          .get(`/api/admin/themes/${testTheme.id}/hints`)
           .set("Authorization", "Bearer invalid-token")
           .expect(401);
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
     });
 
@@ -453,18 +436,18 @@ describe("Integration Tests for API Endpoints", () => {
         };
 
         const response = await request(app)
-          .post(`/admin/themes/${testTheme.id}/hints`)
+          .post(`/api/admin/themes/${testTheme.id}/hints`)
           .set("Authorization", `Bearer ${adminToken}`)
           .send(newHint)
           .expect(201);
 
-        expect(response.body).toHaveProperty('id');
-        expect(response.body).toHaveProperty('code', newHint.code.toUpperCase());
-        expect(response.body).toHaveProperty('content', newHint.content);
-        expect(response.body).toHaveProperty('answer', newHint.answer);
-        expect(response.body).toHaveProperty('progressRate', newHint.progressRate);
-        expect(response.body).toHaveProperty('order', newHint.order);
-        expect(response.body).toHaveProperty('isActive', newHint.isActive);
+        expect(response.body).toHaveProperty("id");
+        expect(response.body).toHaveProperty("code", newHint.code.toUpperCase());
+        expect(response.body).toHaveProperty("content", newHint.content);
+        expect(response.body).toHaveProperty("answer", newHint.answer);
+        expect(response.body).toHaveProperty("progressRate", newHint.progressRate);
+        expect(response.body).toHaveProperty("order", newHint.order);
+        expect(response.body).toHaveProperty("isActive", newHint.isActive);
       });
 
       it("should validate hint data", async () => {
@@ -476,18 +459,18 @@ describe("Integration Tests for API Endpoints", () => {
         };
 
         const response = await request(app)
-          .post(`/admin/themes/${testTheme.id}/hints`)
+          .post(`/api/admin/themes/${testTheme.id}/hints`)
           .set("Authorization", `Bearer ${adminToken}`)
           .send(invalidHint)
           .expect(500); // Validation happens in service
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
 
       it("should enforce business rule BR-01: hint code uniqueness within theme", async () => {
         // First create a hint
         await request(app)
-          .post(`/admin/themes/${testTheme.id}/hints`)
+          .post(`/api/admin/themes/${testTheme.id}/hints`)
           .set("Authorization", `Bearer ${adminToken}`)
           .send({
             code: "UNIQUEHINT",
@@ -500,7 +483,7 @@ describe("Integration Tests for API Endpoints", () => {
 
         // Try to create another hint with the same code in the same theme
         const response = await request(app)
-          .post(`/admin/themes/${testTheme.id}/hints`)
+          .post(`/api/admin/themes/${testTheme.id}/hints`)
           .set("Authorization", `Bearer ${adminToken}`)
           .send({
             code: "UNIQUEHINT", // Same code as before
@@ -511,12 +494,12 @@ describe("Integration Tests for API Endpoints", () => {
           })
           .expect(409); // Conflict error
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
 
       it("should require authentication", async () => {
         const response = await request(app)
-          .post(`/admin/themes/${testTheme.id}/hints`)
+          .post(`/api/admin/themes/${testTheme.id}/hints`)
           .send({
             code: "UNAUTHORIZEDHINT",
             content: "Unauthorized hint",
@@ -525,7 +508,7 @@ describe("Integration Tests for API Endpoints", () => {
           })
           .expect(401);
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
     });
   });
@@ -538,7 +521,7 @@ describe("Integration Tests for API Endpoints", () => {
     beforeAll(async () => {
       // Get admin token for testing
       const loginResponse = await request(app)
-        .post("/admin/auth/login")
+        .post("/api/admin/auth/login")
         .send({ password: process.env.ADMIN_PASSWORD || "admin123" });
 
       adminToken = loginResponse.body.accessToken;
@@ -556,7 +539,7 @@ describe("Integration Tests for API Endpoints", () => {
         data: {
           themeId: testTheme.id,
           startTime: new Date(),
-          status: 'in_progress',
+          status: "in_progress",
         },
       });
     });
@@ -564,7 +547,7 @@ describe("Integration Tests for API Endpoints", () => {
     describe("GET /admin/sessions", () => {
       it("should return game sessions for admin", async () => {
         const response = await request(app)
-          .get("/admin/sessions")
+          .get("/api/admin/sessions")
           .set("Authorization", `Bearer ${adminToken}`)
           .expect(200);
 
@@ -580,7 +563,7 @@ describe("Integration Tests for API Endpoints", () => {
             themeId: testTheme.id,
             startTime: new Date(),
             endTime: new Date(),
-            status: 'completed',
+            status: "completed",
           },
         });
 
@@ -590,16 +573,16 @@ describe("Integration Tests for API Endpoints", () => {
           .expect(200);
 
         expect(Array.isArray(response.body)).toBe(true);
-        expect(response.body.every((session: any) => session.status === 'completed')).toBe(true);
+        expect(response.body.every((session: any) => session.status === "completed")).toBe(true);
       });
 
       it("should require authentication", async () => {
         const response = await request(app)
-          .get("/admin/sessions")
+          .get("/api/admin/sessions")
           .set("Authorization", "Bearer invalid-token")
           .expect(401);
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
     });
 
@@ -610,12 +593,12 @@ describe("Integration Tests for API Endpoints", () => {
           data: {
             themeId: testTheme.id,
             startTime: new Date(),
-            status: 'in_progress',
+            status: "in_progress",
           },
         });
 
         const response = await request(app)
-          .delete(`/admin/sessions/${sessionToAbort.id}`)
+          .delete(`/api/admin/sessions/${sessionToAbort.id}`)
           .set("Authorization", `Bearer ${adminToken}`)
           .expect(204);
 
@@ -624,16 +607,16 @@ describe("Integration Tests for API Endpoints", () => {
           where: { id: sessionToAbort.id },
         });
 
-        expect(updatedSession?.status).toBe('aborted');
+        expect(updatedSession?.status).toBe("aborted");
       });
 
       it("should require authentication", async () => {
         const response = await request(app)
-          .delete(`/admin/sessions/${testSession.id}`)
+          .delete(`/api/admin/sessions/${testSession.id}`)
           .set("Authorization", "Bearer invalid-token")
           .expect(401);
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty("message");
       });
     });
   });

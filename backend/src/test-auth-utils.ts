@@ -29,7 +29,7 @@ function testCase(name: string, fn: () => Promise<void> | void) {
       passedTests++;
       console.log(`✓ ${name}`);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error(`✗ ${name}`);
       console.error(`  오류: ${error.message}`);
     });
@@ -245,7 +245,7 @@ async function runTests() {
 }
 
 // 테스트 실행
-runTests().catch((error) => {
+runTests().catch(error => {
   console.error("테스트 실행 중 오류 발생:", error);
   process.exit(1);
 });

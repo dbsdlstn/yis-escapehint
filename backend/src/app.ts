@@ -3,14 +3,14 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
-import cors, { CorsOptions } from "cors";
+import cors from "cors";
 import helmet from "helmet";
 import swaggerUi from "swagger-ui-express";
 import * as swaggerDocument from "../../swagger/swagger.json";
 import logger from "./shared/utils/logger.util";
 import { errorHandler } from "./shared/middleware/error.middleware";
 import { performanceMiddleware } from "./shared/middleware/performance.middleware";
-import { apiLimiter, loginLimiter } from "./shared/middleware/rate-limit.middleware";
+import { apiLimiter } from "./shared/middleware/rate-limit.middleware";
 import { themeRouter, adminThemeRouter } from "./modules/theme/theme.controller";
 import { sessionRouter } from "./modules/session/session.controller";
 import { hintRouter } from "./modules/hint/hint.controller";
@@ -51,23 +51,23 @@ const corsOrigin = env.CORS_ORIGIN;
 const corsOptions: cors.CorsOptions = {
   origin: function (origin, callback) {
     // 개발 환경에서는 origin이 undefined일 수 있음
-    if (env.NODE_ENV === 'development' && !origin) {
+    if (env.NODE_ENV === "development" && !origin) {
       callback(null, true);
       return;
     }
 
     // origin이 없거나 CORS_ORIGIN이 *이면 모든 origin 허용
-    if (!origin || corsOrigin === '*') {
+    if (!origin || corsOrigin === "*") {
       callback(null, true);
       return;
     }
 
     // 환경 변수에 설정된 origin 목록에 포함되어 있는지 확인
-    const allowedOrigins = corsOrigin.split(',').map(o => o.trim());
+    const allowedOrigins = corsOrigin.split(",").map(o => o.trim());
     const isAllowed = allowedOrigins.some(allowedOrigin => {
       // 와일드카드(*) 지원 (예: https://*.vercel.app)
-      if (allowedOrigin.includes('*')) {
-        const regexPattern = allowedOrigin.replace(/\*/g, '.*');
+      if (allowedOrigin.includes("*")) {
+        const regexPattern = allowedOrigin.replace(/\*/g, ".*");
         return new RegExp(`^${regexPattern}$`).test(origin);
       }
       return origin === allowedOrigin;
@@ -81,16 +81,20 @@ const corsOptions: cors.CorsOptions = {
 app.use(cors(corsOptions));
 
 // JSON 파싱 미들웨어
-app.use(express.json({
-  limit: '10mb',
-  type: ['application/json', 'text/plain']
-}));
+app.use(
+  express.json({
+    limit: "10mb",
+    type: ["application/json", "text/plain"],
+  })
+);
 
 // URL 인코딩 파싱 미들웨어
-app.use(express.urlencoded({
-  extended: true,
-  limit: '10mb'
-}));
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "10mb",
+  })
+);
 
 // Performance measurement middleware
 app.use(performanceMiddleware);
@@ -124,7 +128,7 @@ app.use("/api/admin/hints", authMiddleware, hintRouter);
 app.use("/api/admin/sessions", authMiddleware, sessionRouter);
 
 // 404 핸들러
-app.use((req, res, next) => {
+app.use((req, res) => {
   logger.warn(`404 - Requested path not found: ${req.path}`);
   res.status(404).json({ message: `요청하신 경로를 찾을 수 없습니다: ${req.path}` });
 });

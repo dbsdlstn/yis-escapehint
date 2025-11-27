@@ -3,12 +3,7 @@ import { AppError } from "../errors/AppError";
 import logger from "../utils/logger.util";
 import { createErrorResponse } from "../utils/response/api-response.util";
 
-export function errorHandler(
-  err: Error,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export function errorHandler(err: Error, req: Request, res: Response, _next: NextFunction) {
   if (err instanceof AppError) {
     logger.error(err.message, { statusCode: err.statusCode, stack: err.stack, url: req.url, method: req.method });
     const errorResponse = createErrorResponse(err.message, err.statusCode);
@@ -21,7 +16,7 @@ export function errorHandler(
     stack: err.stack,
     url: req.url,
     method: req.method,
-    ip: req.ip
+    ip: req.ip,
   });
 
   // Don't expose internal error details to the client
