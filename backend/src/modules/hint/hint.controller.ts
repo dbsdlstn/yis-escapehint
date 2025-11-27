@@ -13,10 +13,13 @@ export const hintRouter = router;
 router.get("/themes/:themeId/hints", authenticateToken, async (req: Request, res: Response) => {
   try {
     const { themeId } = req.params;
+    console.log('Received request to get hints for themeId:', themeId); // 디버깅 로그
     const hints = await hintService.getHintsByTheme(themeId);
+    console.log('Successfully retrieved hints:', hints.length); // 디버깅 로그
     sendResponse(res, hints, "Hints retrieved successfully", 200);
     return;
   } catch (error) {
+    console.error('Error in get hints endpoint:', error); // 디버깅 로그
     if (error instanceof AppError) {
       // Error handling is done by the global error middleware
       throw error;

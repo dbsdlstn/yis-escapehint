@@ -1,12 +1,14 @@
 // src/modules/theme/theme.controller.ts
 import { Router, Request, Response } from "express";
 import { ThemeService } from "./theme.service";
+import { SessionService } from "../session/session.service";
 import { authenticateToken } from "../../shared/middleware/auth.middleware";
 import { z } from "zod";
 import logger from "../../shared/utils/logger.util";
 import { sendResponse, sendErrorResponse } from "../../shared/utils/response/api-response.util";
 
 const themeService = new ThemeService();
+const sessionService = new SessionService();
 const router = Router();
 
 // Zod schemas for validation
@@ -40,6 +42,25 @@ router.get("/", async (req: Request, res: Response) => {
     return;
   } catch (error) {
     logger.error("Error in player get themes endpoint:", error);
+    sendErrorResponse(res, "서버 오류가 발생했습니다.", 500);
+    return;
+  }
+});
+
+// 플레이어용: 단일 테마 조회 (게임 시작 시 테마 정보 필요)
+router.get("/:id", async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const theme = await themeService.getThemeById(id);
+
+    if (!theme) {
+      return sendErrorResponse(res, "테마를 찾을 수 없습니다.", 404);
+    }
+
+    sendResponse(res, theme, "Theme retrieved successfully", 200);
+    return;
+  } catch (error) {
+    logger.error(`Error in player get theme by id endpoint for id ${req.params.id}:`, error);
     sendErrorResponse(res, "서버 오류가 발생했습니다.", 500);
     return;
   }
@@ -163,6 +184,37 @@ adminThemeRouter.delete("/:id", authenticateToken, async (req: Request, res: Res
     }
 
     logger.error(`Error in delete theme endpoint for id ${req.params.id}:`, error);
+    sendErrorResponse(res, "서버 오류가 발생했습니다.", 500);
+    return;
+  }
+});
+
+// 관리자용: 통계 대시보드
+adminThemeRouter.get("/stats", authenticateToken, async (req: Request, res: Response) => {
+  try {
+    logger.info("Fetching dashboard stats");
+
+    // 테마 수
+    const themeCount = await themeService.getThemeCount();
+    logger.info("Theme count:", themeCount);
+
+    // 미리 생성된 세션 서비스를 사용하여 오늘 사용된 힌트 수를 계산
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // 오늘 날짜의 힌트 사용 수를 계산
+    const hintUsageCount = await sessionService.getTodaysHintUsageCount(today, tomorrow);
+    logger.info("Hint usage count:", hintUsageCount);
+
+    sendResponse(res, {
+      themeCount,
+      hintUsageCount
+    }, "Dashboard stats retrieved successfully", 200);
+    return;
+  } catch (error) {
+    logger.error("Error in dashboard stats endpoint:", error);
     sendErrorResponse(res, "서버 오류가 발생했습니다.", 500);
     return;
   }

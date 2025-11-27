@@ -1,5 +1,5 @@
 // src/modules/hint/hint.service.ts
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../../shared/utils/prisma.util";
 import { ConflictError, ValidationError } from "../../shared/errors/AppError";
 
 interface CreateHintDto {
@@ -22,13 +22,21 @@ interface UpdateHintDto {
 }
 
 export class HintService {
-  private prisma = new PrismaClient();
+  private prisma = prisma;
 
   async getHintsByTheme(themeId: string) {
-    return this.prisma.hint.findMany({
-      where: { themeId },
-      orderBy: { order: "asc" },
-    });
+    console.log('Fetching hints for themeId:', themeId); // 디버깅 로그
+    try {
+      const hints = await this.prisma.hint.findMany({
+        where: { themeId },
+        orderBy: { order: "asc" },
+      });
+      console.log('Found hints:', hints.length); // 디버깅 로그
+      return hints;
+    } catch (error) {
+      console.error('Error fetching hints:', error); // 디버깅 로그
+      throw error;
+    }
   }
 
   async createHint(hintData: CreateHintDto) {

@@ -36,6 +36,7 @@ export class AuthService {
       }
 
       // JWT 토큰 생성
+      logger.debug("Creating JWT token for admin user");
       const token = generateToken(
         {
           userId: "admin",
@@ -43,6 +44,7 @@ export class AuthService {
         },
         env.JWT_EXPIRES_IN
       );
+      logger.debug(`Generated token: ${token.substring(0, 20)}...`); // 처음 20자만 로그로 남김 (보안상)
 
       logger.info("Admin login successful");
       return token;

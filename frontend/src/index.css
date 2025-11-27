@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* 버튼 */
+  .btn-primary {
+    @apply px-5 py-2 bg-bg-button text-dark-primary text-button-text font-semibold rounded-full shadow-md hover:bg-gray-100 active:scale-95 transition-all duration-200;
+  }
+
+  .btn-keypad {
+    @apply w-16 h-16 flex items-center justify-center text-keypad-number font-medium text-text-primary bg-transparent hover:bg-white/10 active:bg-white/20 rounded-lg transition-colors duration-150;
+  }
+
+  /* 입력 */
+  .input-code-box {
+    @apply w-14 h-14 flex items-center justify-center text-input-text text-text-primary font-semibold bg-bg-input border-2 border-border-light rounded-xl focus-within:border-border-focus focus-within:ring-2 focus-within:ring-white/30 transition-all duration-200;
+  }
+
+  /* 레이아웃 */
+  .screen-container {
+    @apply min-h-screen bg-gradient-to-b from-dark-gradient-start to-dark-gradient-end;
+  }
+
+  .content-wrapper {
+    @apply container mx-auto px-6 py-8;
+  }
+
+  /* 텍스트 */
+  .text-timer {
+    @apply text-timer-main font-bold text-text-primary tracking-wider;
+  }
+
+  .text-section-heading {
+    @apply text-section-title font-semibold text-text-primary text-center;
+  }
+}
+
+@layer utilities {
+  /* 사용자 정의 유틸리티 */
+  .text-glow {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  }
+
+  .backdrop-blur-dark {
+    backdrop-filter: blur(10px);
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+@layer utilities {
+  /* 페이드 인 */
+  .fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* 스케일 펄스 */
+  .scale-pulse {
+    animation: scalePulse 2s infinite;
+  }
+
+  @keyframes scalePulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+}

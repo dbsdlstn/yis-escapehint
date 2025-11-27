@@ -26,8 +26,9 @@ describe("App Setup Tests", () => {
     it("should return 404 for non-existent route", async () => {
       const response = await request(app).get("/non-existent-route").expect(404);
 
-      // Express default 404 message
-      expect(response.text).toContain("Cannot GET /non-existent-route");
+      // Check for custom 404 message in JSON format
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain("요청하신 경로를 찾을 수 없습니다");
     });
   });
 });

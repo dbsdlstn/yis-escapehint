@@ -1,12 +1,17 @@
 // src/app.ts
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import cors, { CorsOptions } from "cors";
 import helmet from "helmet";
+import swaggerUi from "swagger-ui-express";
+import * as swaggerDocument from "../../swagger/swagger.json";
 import logger from "./shared/utils/logger.util";
 import { errorHandler } from "./shared/middleware/error.middleware";
 import { performanceMiddleware } from "./shared/middleware/performance.middleware";
 import { apiLimiter, loginLimiter } from "./shared/middleware/rate-limit.middleware";
-import { themeRouter } from "./modules/theme/theme.controller";
+import { themeRouter, adminThemeRouter } from "./modules/theme/theme.controller";
 import { sessionRouter } from "./modules/session/session.controller";
 import { hintRouter } from "./modules/hint/hint.controller";
 import { authRouter } from "./modules/auth/auth.controller";
@@ -76,10 +81,16 @@ const corsOptions: cors.CorsOptions = {
 app.use(cors(corsOptions));
 
 // JSON 파싱 미들웨어
-app.use(express.json());
+app.use(express.json({
+  limit: '10mb',
+  type: ['application/json', 'text/plain']
+}));
 
 // URL 인코딩 파싱 미들웨어
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({
+  extended: true,
+  limit: '10mb'
+}));
 
 // Performance measurement middleware
 app.use(performanceMiddleware);
@@ -99,22 +110,23 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
+// Swagger UI 설정
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 // 플레이어용 API 라우터 등록
-app.use("/themes", themeRouter);
-app.use("/sessions", sessionRouter);
+app.use("/api/themes", themeRouter);
+app.use("/api/sessions", sessionRouter);
 
 // 관리자용 API 라우터 등록 (인증 필요)
-app.use("/admin/auth", authRouter);
-app.use("/admin/themes", authMiddleware, themeRouter);
-app.use("/admin/hints", authMiddleware, hintRouter);
-app.use("/admin/sessions", authMiddleware, sessionRouter);
+app.use("/api/admin/auth", authRouter);
+app.use("/api/admin/themes", adminThemeRouter);
+app.use("/api/admin/hints", authMiddleware, hintRouter);
+app.use("/api/admin/sessions", authMiddleware, sessionRouter);
 
-// 404 핸들러 - 이 부분을 커스텀 에러로 변경
+// 404 핸들러
 app.use((req, res, next) => {
   logger.warn(`404 - Requested path not found: ${req.path}`);
-  const error = new Error(`요청하신 경로를 찾을 수 없습니다: ${req.path}`) as any;
-  error.statusCode = 404;
-  next(error);
+  res.status(404).json({ message: `요청하신 경로를 찾을 수 없습니다: ${req.path}` });
 });
 
 // 전역 에러 핸들러 (에러 미들웨어)

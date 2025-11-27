@@ -3,8 +3,9 @@ CREATE TABLE "Theme" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
-    "playTime" INTEGER NOT NULL,
+    "playTime" INTEGER NOT NULL DEFAULT 60,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "difficulty" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

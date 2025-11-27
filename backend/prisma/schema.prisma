@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,39 +6,33 @@ datasource db {
   provider = "postgresql"
 }
 
-enum SessionStatus {
-  in_progress
-  completed
-  aborted
-}
-
 model Theme {
   id          String        @id @default(uuid())
   name        String        @unique
   description String?
   playTime    Int           @default(60)
   isActive    Boolean       @default(true)
-  difficulty  String?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  hints       Hint[]
+  difficulty  String?
   sessions    GameSession[]
+  hints       Hint[]
 
   @@index([isActive])
 }
 
 model Hint {
-  id           String       @id @default(uuid())
+  id           String      @id @default(uuid())
   themeId      String
   code         String
   content      String
   answer       String
-  progressRate Int          @default(0)
-  order        Int          @default(0)
-  isActive     Boolean      @default(true)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  theme        Theme        @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  progressRate Int         @default(0)
+  order        Int         @default(0)
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  theme        Theme       @relation(fields: [themeId], references: [id], onDelete: Cascade)
   usages       HintUsage[]
 
   @@unique([themeId, code])
@@ -49,16 +40,16 @@ model Hint {
 }
 
 model GameSession {
-  id             String       @id @default(uuid())
-  themeId        String
-  startTime      DateTime     @default(now())
-  endTime        DateTime?
-  usedHintCount  Int          @default(0)
-  status         SessionStatus @default(in_progress)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  theme          Theme        @relation(fields: [themeId], references: [id])
-  hintUsages     HintUsage[]
+  id            String        @id @default(uuid())
+  themeId       String
+  startTime     DateTime      @default(now())
+  endTime       DateTime?
+  usedHintCount Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  status        SessionStatus @default(in_progress)
+  theme         Theme         @relation(fields: [themeId], references: [id])
+  hintUsages    HintUsage[]
 
   @@index([themeId, status])
 }
@@ -68,9 +59,15 @@ model HintUsage {
   sessionId String
   hintId    String
   usedAt    DateTime    @default(now())
-  session   GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   hint      Hint        @relation(fields: [hintId], references: [id], onDelete: Cascade)
+  session   GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, hintId])
   @@index([sessionId])
+}
+
+enum SessionStatus {
+  in_progress
+  completed
+  aborted
 }

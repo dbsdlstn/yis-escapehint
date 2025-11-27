@@ -40,6 +40,7 @@ export const authMiddleware = (
     }
 
     const token = parts[1];
+    console.log("Received token:", token.substring(0, 20) + "..."); // 토큰의 처음 20자만 출력
 
     // 토큰 검증
     const payload = verifyToken(token);

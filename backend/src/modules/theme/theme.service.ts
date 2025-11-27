@@ -1,5 +1,5 @@
 // src/modules/theme/theme.service.ts
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../../shared/utils/prisma.util";
 import logger from '../../shared/utils/logger.util';
 
 interface CreateThemeDto {
@@ -19,7 +19,7 @@ interface UpdateThemeDto {
 }
 
 export class ThemeService {
-  private prisma = new PrismaClient();
+  private prisma = prisma;
 
   async getPlayableThemes() {
     try {

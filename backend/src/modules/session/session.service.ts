@@ -1,5 +1,6 @@
 // src/modules/session/session.service.ts
-import { PrismaClient, Hint } from "@prisma/client";
+import { Hint } from "@prisma/client";
+import { prisma } from "../../shared/utils/prisma.util";
 import {
   HintNotFoundError,
   SessionNotFoundError,
@@ -9,7 +10,7 @@ import {
 } from "../../shared/errors/AppError";
 
 export class SessionService {
-  private prisma = new PrismaClient();
+  private prisma = prisma;
 
   async createSession(themeId: string) {
     // Verify theme exists
@@ -147,5 +148,30 @@ export class SessionService {
         endTime: new Date(),
       },
     });
+  }
+
+  /**
+   * 오늘 사용된 힌트 수를 가져옵니다.
+   * @param startDate 오늘 자정
+   * @param endDate 내일 자정
+   * @returns 오늘 사용된 힌트 수
+   */
+  async getTodaysHintUsageCount(startDate: Date, endDate: Date) {
+    try {
+      const count = await this.prisma.hintUsage.count({
+        where: {
+          usedAt: {
+            gte: startDate,
+            lt: endDate
+          }
+        }
+      });
+
+      console.log(`Hint usage count from ${startDate} to ${endDate}:`, count); // 디버깅 로그
+      return count;
+    } catch (error) {
+      console.error('Error fetching today\'s hint usage count:', error);
+      throw error;
+    }
   }
 }
