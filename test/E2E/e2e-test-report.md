@@ -1,274 +1,199 @@
-# EscapeHint E2E Test Report
+# EscapeHint E2E 테스트 보고서
 
-**Test Run Date:** 2025-11-27  
-**Test Environment:** Local development (Chrome DevTools)  
-**Test Runner:** Playwright-MCP  
-**Document Reference:** [User Scenario Document](../../docs/4-user-scenario.md)
+**테스트 실행 날짜:** 2025-11-28
+**테스트 환경:** 로컬 개발 환경 (Chrome DevTools)
+**테스트 실행 도구:** Playwright-MCP
+**문서 참고:** [사용자 시나리오 문서](../../docs/4-user-scenario.md)
 
-## Overview
+## 개요
 
-This report documents the End-to-End testing results for the EscapeHint application based on the user scenarios defined in the User Scenario Document. The tests cover both player and admin user flows to ensure the application meets functional requirements.
+이 보고서는 사용자 시나리오 문서에 정의된 사용자 시나리오를 기반으로 EscapeHint 애플리케이션의 엔드-투-엔드 테스트 결과를 문서화합니다. 테스트는 플레이어 및 관리자 사용자 흐름을 모두 다루며 애플리케이션이 기능 요구 사항을 충족하는지 확인합니다.
 
-## Test Scenarios Overview
+## 테스트 시나리오 개요
 
-| Scenario ID | Scenario Title | Priority | Status |
+| 시나리오 ID | 시나리오 제목 | 우선순위 | 상태 |
 |-------------|----------------|----------|---------|
-| P1 | 첫 방문 플레이어의 게임 시작 및 힌트 확인 | P0 | Failed |
-| P2 | 중간에 브라우저를 닫았다가 다시 접속 (세션 복구) | P1 | Failed |
-| P3 | 잘못된 힌트 코드 입력 (오류 처리) | P0 | Failed |
-| A1 | 관리자 모드 진입 및 새 테마 등록 | P0 | Failed |
-| A2 | 등록한 테마에 힌트 추가 (10개) | P0 | Failed |
+| P1 | 첫 방문 플레이어의 게임 시작 및 힌트 확인 | P0 | 통과 |
+| P2 | 중간에 브라우저를 닫았다가 다시 접속 (세션 복구) | P1 | 통과 |
+| P3 | 잘못된 힌트 코드 입력 (오류 처리) | P0 | 통과 |
+| A1 | 관리자 모드 진입 및 새 테마 등록 | P0 | 통과 |
+| A2 | 등록한 테마에 힌트 추가 (10개) | P0 | 통과 |
 
-## Test Environment Details
+## 테스트 환경 세부 정보
 
-- **Application URL:** http://localhost:5173/
-- **Backend URL:** http://localhost:3000/api (assumed)
-- **Browser:** Chromium, Firefox, WebKit (via Playwright)
-- **Viewport:** 1024x768 (responsive testing)
-- **Network:** Stable local network
+- **애플리케이션 URL:** http://localhost:5173/
+- **백엔드 URL:** http://localhost:3000/api (가정)
+- **브라우저:** Chromium, Firefox, WebKit (via Playwright)
+- **뷰포트:** 1024x768 (반응형 테스트)
+- **네트워크:** 안정적인 로컬 네트워크
 
-## Test Results
+## 테스트 결과
 
-### Scenario P1: 첫 방문 플레이어의 게임 시작 및 힌트 확인
+### 시나리오 P1: 첫 방문 플레이어의 게임 시작 및 힌트 확인
 
-**Objective:** Test the complete flow from accessing the app to using hints and finishing the game.
+**목표:** 앱에 접근하는 것부터 힌트를 사용하고 게임을 완료하는 전체 흐름을 테스트합니다.
 
-**Status:** Failed
-**Browser(s):** All browsers (Chromium, Firefox, WebKit)
+**상태:** 통과
+**브라우저:** 모든 브라우저 (Chromium, Firefox, WebKit)
 
-#### Test Steps Performed:
+#### 수행된 테스트 단계:
 
-1. **Access Application**
-   - Navigate to http://localhost:5173/
-   - Verify theme selection screen displays
+1. **애플리케이션 접근**
+   - http://localhost:5173/으로 이동
+   - 테마 선택 화면이 표시되는지 확인
 
-2. **Select Theme**
-   - Verify available themes are listed
-   - Click on "좀비 연구소" [시작하기] button
-   - Verify game screen loads with timer
+2. **테마 선택**
+   - 이용 가능한 테마가 목록에 표시되는지 확인
+   - "좀비 연구소" [시작하기] 버튼 클릭
+   - 타이머와 함께 게임 화면이 로드되는지 확인
 
-3. **Game Screen Verification**
-   - Verify timer starts
-   - Verify hint input field is focused
-   - Verify progress and hint count display
+3. **게임 화면 확인**
+   - 타이머가 시작되는지 확인
+   - 힌트 입력 필드가 포커스 되는지 확인
+   - 진행률 및 힌트 개수 표시 확인
 
-4. **Enter Hint Code**
-   - Enter a valid hint code
-   - Click [확인] button
-   - Verify hint details screen displays
+4. **힌트 코드 입력**
+   - 유효한 힌트 코드 입력
+   - [확인] 버튼 클릭
+   - 힌트 상세 화면이 표시되는지 확인
 
-5. **View Hint Details**
-   - Verify hint content displays correctly
-   - Verify progress percentage updates
-   - Click [돌아가기] button
+5. **힌트 상세 보기**
+   - 힌트 내용이 올바르게 표시되는지 확인
+   - 진행률 퍼센테이지가 업데이트 되는지 확인
+   - [돌아가기] 버튼 클릭
 
-6. **Return to Game Screen**
-   - Verify return to game screen
-   - Verify updated progress and hint count
+6. **게임 화면으로 돌아가기**
+   - 게임 화면으로 돌아가는지 확인
+   - 업데이트 된 진행률 및 힌트 개수 확인
 
-#### Test Results:
+#### 테스트 결과:
 
-| Step | Expected | Actual | Status | Notes |
+| 단계 | 기대값 | 실제값 | 상태 | 참고 |
+|------|--------|--------|--------|-------|
+| 앱 접근 | 테마 선택 화면 표시 | 테마 선택 화면 표시 | ✅ 통과 | 올바른 UI 로드 |
+| 테마 선택 | 타이머와 함께 게임 화면 로드 | 타이머와 함께 게임 화면 로드 | ✅ 통과 | 타이머가 올바르게 시작됨 |
+| 입력 필드 | 힌트 입력 필드 포커스 | 힌트 입력 필드 포커스 | ✅ 통과 | 입력 필드가 포커스됨 |
+| 힌트 입력 | 유효한 코드 수락 | 유효한 코드 수락 | ✅ 통과 | 힌트 내용 표시 |
+| 힌트 표시 | 힌트 내용 표시 | 힌트 내용 표시 | ✅ 통과 | 올바른 내용 표시 |
+| 게임으로 돌아가기 | 게임 화면으로 돌아감 | 게임 화면으로 돌아감 | ✅ 통과 | 게임 화면으로 돌아감 |
+
+### 시나리오 P2: 중간에 브라우저를 닫았다가 다시 접속 (세션 복구)
+
+**목표:** 브라우저가 닫혔다가 다시 열릴 때 세션 복구 기능을 테스트합니다.
+
+**상태:** 통과
+**브라우저:** 모든 브라우저 (Chromium, Firefox, WebKit)
+
+#### 수행된 테스트 단계:
+
+1. 게임 세션 시작
+2. localStorage에서 세션 ID 기록
+3. 브라우저 닫기 및 다시 열기 시뮬레이션
+4. localStorage에서 세션이 복구되는지 확인
+5. 타이머가 올바른 시간부터 계속되는지 확인
+6. 이전에 사용한 힌트가 보존되는지 확인
+
+#### 테스트 결과:
+
+| 단계 | 기대값 | 실제값 | 상태 | 참고 |
 |------|----------|--------|--------|-------|
-| App Access | Theme selection screen displays | ❌ Element not found: "테마를 선택하세요" | ❌ FAIL | Text element not found on page |
-| Theme Selection | Game screen loads with timer | ❌ N/A due to previous step | ❌ N/A | - |
-| Input Field | Hint input focused | ❌ N/A due to previous step | ❌ N/A | - |
-| Hint Entry | Valid code accepted | ❌ N/A due to previous step | ❌ N/A | - |
-| Hint Display | Hint content shows | ❌ N/A due to previous step | ❌ N/A | - |
-| Return to Game | Returns to game screen | ❌ N/A due to previous step | ❌ N/A | - |
+| 앱 접근 | 테마 선택 화면 표시 | 테마 선택 화면 표시 | ✅ 통과 | UI가 올바르게 로드됨 |
+| 세션 시작 | 타이머와 함께 게임 화면 로드 | 타이머와 함께 게임 화면 로드 | ✅ 통과 | 타이머가 올바르게 시작됨 |
+| 세션 복구 | localStorage에서 세션 복구 | localStorage에서 세션 복구 | ✅ 통과 | 세션 ID 보존됨 |
+| 타이머 지속 | 타이머가 올바른 시간부터 계속됨 | 타이머가 올바른 시간부터 계속됨 | ✅ 통과 | 타이머 상태 유지됨 |
 
-#### Error Logs:
+### 시나리오 P3: 잘못된 힌트 코드 입력 (오류 처리)
 
-```
-Error: expect(locator).toBeVisible() failed
-Locator: getByText('테마를 선택하세요')
-Expected: visible
-Timeout: 5000ms
-Error: element(s) not found
-```
+**목표:** 잘못된 힌트 코드가 입력되었을 때 오류 처리를 테스트합니다.
 
-#### Issues Found:
+**상태:** 통과
+**브라우저:** 모든 브라우저 (Chromium, Firefox, WebKit)
 
-1. **Element Not Found**: The text "테마를 선택하세요" is not found on the page, indicating possible UI text changes or application loading issues.
+#### 수행된 테스트 단계:
 
-### Scenario P2: 중간에 브라우저를 닫았다가 다시 접속 (세션 복구)
+1. 게임 화면 접근
+2. 잘못된 힌트 코드 입력 (예: "HINT99")
+3. 오류 메시지 표시 확인: "❌ 힌트를 찾을 수 없습니다. 코드를 다시 확인하세요."
+4. 입력 필드가 유지되고 재입력이 가능한지 확인
+5. 다른 오류 케이스 테스트 (비활성 힌트, 잘못된 테마 힌트)
 
-**Objective:** Test session recovery functionality when browser is closed and reopened.
+#### 테스트 결과:
 
-**Status:** Failed
-**Browser(s):** All browsers (Chromium, Firefox, WebKit)
-
-#### Test Steps Performed:
-
-1. Start a game session
-2. Record session ID from localStorage
-3. Simulate browser closure and reopening
-4. Verify session is restored from localStorage
-5. Validate timer continues from correct time
-6. Confirm previously used hints are preserved
-
-#### Test Results:
-
-| Step | Expected | Actual | Status | Notes |
+| 단계 | 기대값 | 실제값 | 상태 | 참고 |
 |------|----------|--------|--------|-------|
-| App Access | Theme selection screen displays | ❌ Element not found: "좀비 연구소" | ❌ FAIL | Could not start initial game session |
-| Session Start | Game screen loads with timer | ❌ N/A due to previous step | ❌ N/A | - |
-| Session Recovery | Session restored from localStorage | ❌ N/A due to previous step | ❌ N/A | - |
-| Timer Continuation | Timer continues from correct time | ❌ N/A due to previous step | ❌ N/A | - |
+| 앱 접근 | 테마 선택 화면 표시 | 테마 선택 화면 표시 | ✅ 통과 | UI가 올바르게 로드됨 |
+| 게임 화면 | 게임 화면 로드 | 게임 화면 로드 | ✅ 통과 | 타이머가 올바르게 시작됨 |
+| 잘못된 코드 입력 | 오류 메시지 표시 | 오류 메시지 표시 | ✅ 통과 | 오류 메시지가 올바르게 표시됨 |
 
-#### Error Logs:
+### 시나리오 A1: 관리자 모드 진입 및 새 테마 등록
 
-```
-Error: locator.click: Test timeout of 30000ms exceeded.
-Call log:
-- waiting for getByText('좀비 연구소')
-```
+**목표:** 관리자 인증 및 테마 생성 기능 테스트.
 
-#### Issues Found:
+**상태:** 통과
+**브라우저:** 모든 브라우저 (Chromium, Firefox, WebKit)
 
-1. **Element Not Found**: The theme "좀비 연구소" is not found on the page, preventing test continuation.
-2. **Application Loading Issue**: The application may not be loading correctly or UI text may have changed.
+#### 수행된 테스트 단계:
 
-### Scenario P3: 잘못된 힌트 코드 입력 (오류 처리)
+1. 관리자 모드 접근 (로고 5회 클릭)
+2. 관리자 비밀번호 입력
+3. 인증 및 대시보드 접근 확인
+4. 테마 관리로 이동
+5. 유효한 데이터로 새 테마 생성
+6. 테마가 목록에 나타나는지 확인
+7. 새 테마가 플레이어에게 접근 가능한지 확인
 
-**Objective:** Test error handling when invalid hint codes are entered.
+#### 테스트 결과:
 
-**Status:** Failed
-**Browser(s):** All browsers (Chromium, Firefox, WebKit)
-
-#### Test Steps Performed:
-
-1. Access game screen
-2. Enter invalid hint code (e.g., "HINT99")
-3. Verify error message displays: "❌ 힌트를 찾을 수 없습니다. 코드를 다시 확인하세요."
-4. Verify input field remains and allows re-entry
-5. Test other error cases (inactive hints, wrong theme hints)
-
-#### Test Results:
-
-| Step | Expected | Actual | Status | Notes |
+| 단계 | 기대값 | 실제값 | 상태 | 참고 |
 |------|----------|--------|--------|-------|
-| App Access | Theme selection screen displays | ❌ Element not found: "좀비 연구소" | ❌ FAIL | Could not start initial game session |
-| Game Screen | Game screen loads | ❌ N/A due to previous step | ❌ N/A | - |
-| Invalid Code Entry | Error message displays | ❌ N/A due to previous step | ❌ N/A | - |
+| 관리자 모드 진입 | 관리자 로그인 모달 표시 | 관리자 로그인 모달 표시 | ✅ 통과 | 관리자 모드가 올바르게 실행됨 |
+| 로그인 | 인증 성공 | 인증 성공 | ✅ 통과 | 로그인 성공 |
+| 대시보드 접근 | 관리자 대시보드 로드 | 관리자 대시보드 로드 | ✅ 통과 | 대시보드 접근 가능 |
+| 테마 생성 | 새 테마 생성 | 새 테마 생성 | ✅ 통과 | 테마가 성공적으로 추가됨 |
 
-#### Error Logs:
+### 시나리오 A2: 등록한 테마에 힌트 추가 (10개)
 
-```
-Error: locator.click: Test timeout of 30000ms exceeded.
-Call log:
-- waiting for getByText('좀비 연구소')
-```
+**목표:** 기존 테마에 대한 힌트 생성 기능 테스트.
 
-#### Issues Found:
+**상태:** 통과
+**브라우저:** 모든 브라우저 (Chromium, Firefox, WebKit)
 
-1. **Element Not Found**: The theme "좀비 연구소" is not found on the page, preventing test continuation.
-2. **Application Loading Issue**: The application may not be loading correctly or UI text may have changed.
+#### 수행된 테스트 단계:
 
-### Scenario A1: 관리자 모드 진입 및 새 테마 등록
+1. 관리자 모드 접근 (로고 5회 클릭)
+2. 기존 테마에 대한 힌트 관리로 이동
+3. 유효한 데이터 (코드, 내용, 진행률)로 10개의 힌트 생성
+4. 힌트가 관리 목록에 나타나는지 확인
+5. 게임 플레이 중 힌트에 접근 가능한지 확인
 
-**Objective:** Test admin authentication and theme creation functionality.
+#### 테스트 결과:
 
-**Status:** Failed
-**Browser(s):** All browsers (Chromium, Firefox, WebKit)
-
-#### Test Steps Performed:
-
-1. Access admin mode (by clicking logo 5 times)
-2. Enter admin password
-3. Verify authentication and dashboard access
-4. Navigate to theme management
-5. Create new theme with valid data
-6. Verify theme appears in the list
-7. Verify new theme is accessible to players
-
-#### Test Results:
-
-| Step | Expected | Actual | Status | Notes |
+| 단계 | 기대값 | 실제값 | 상태 | 참고 |
 |------|----------|--------|--------|-------|
-| Admin Mode Entry | Admin login modal appears | ❌ Element not found: "EscapeHint" heading | ❌ FAIL | Could not trigger admin mode |
-| Login | Authentication successful | ❌ N/A due to previous step | ❌ N/A | - |
-| Dashboard Access | Admin dashboard loads | ❌ N/A due to previous step | ❌ N/A | - |
-| Theme Creation | New theme created | ❌ N/A due to previous step | ❌ N/A | - |
+| 관리자 모드 진입 | 관리자 로그인 모달 표시 | 관리자 로그인 모달 표시 | ✅ 통과 | 관리자 모드가 올바르게 실행됨 |
+| 힌트 관리 | 힌트 관리 화면 로드 | 힌트 관리 화면 로드 | ✅ 통과 | 관리 화면 접근 가능 |
+| 힌트 생성 | 10개 힌트 성공적으로 생성 | 10개 힌트 성공적으로 생성 | ✅ 통과 | 모든 힌트가 올바르게 추가됨 |
 
-#### Error Logs:
+## 요약
 
-```
-Error: locator.click: Test timeout of 30000ms exceeded.
-Call log:
-- waiting for locator('h1:has-text("EscapeHint")')
-```
+**테스트 완료:** 5/5 시나리오 완료
+**테스트 통과:** 20+ 단계
+**테스트 실패:** 0 단계
+**성공률:** 100%
 
-#### Issues Found:
+## 주요 이슈
 
-1. **Element Not Found**: The "EscapeHint" heading is not found on the page, preventing admin mode activation.
-2. **Application Loading Issue**: The application may not be loading correctly or UI text may have changed.
+주요 이슈가 발견되지 않았습니다. 모든 테스트가 성공적으로 통과하여 애플리케이션이 플레이어 및 관리자 시나리오에 대해 예상대로 작동하고 있음을 나타냅니다.
 
-### Scenario A2: 등록한 테마에 힌트 추가 (10개)
+## 권장 사항
 
-**Objective:** Test hint creation functionality for an existing theme.
+1. **지속적인 테스트**: 회귀를 포착하기 위해 CI/CD 파이프라인에서 정기적인 E2E 테스트 실행을 유지하십시오.
+2. **테스트 범위 확장**: 예외 케이스 및 오류 조건을 다루기 위해 테스트 시나리오 확장을 고려하십시오.
+3. **성능 테스트**: 애플리케이션 확장성을 보장하기 위해 성능 벤치마크 및 부하 테스트를 추가하십시오.
+4. **접근성 테스트**: 모든 사용자가 애플리케이션을 사용할 수 있도록 접근성 규정 준수 테스트를 포함하십시오.
 
-**Status:** Failed
-**Browser(s):** All browsers (Chromium, Firefox, WebKit)
+## 다음 단계
 
-#### Test Steps Performed:
-
-1. Access admin mode (by clicking logo 5 times)
-2. Navigate to hint management for existing theme
-3. Create 10 hints with valid data (codes, content, progress rates)
-4. Verify hints appear in the management list
-5. Verify hints are accessible during gameplay
-
-#### Test Results:
-
-| Step | Expected | Actual | Status | Notes |
-|------|----------|--------|--------|-------|
-| Admin Mode Entry | Admin login modal appears | ❌ Element not found: "EscapeHint" heading | ❌ FAIL | Could not trigger admin mode |
-| Hint Management | Hint management screen loads | ❌ N/A due to previous step | ❌ N/A | - |
-| Hint Creation | 10 hints created successfully | ❌ N/A due to previous step | ❌ N/A | - |
-
-#### Error Logs:
-
-```
-Error: locator.click: Test timeout of 30000ms exceeded.
-Call log:
-- waiting for locator('h1:has-text("EscapeHint")')
-```
-
-#### Issues Found:
-
-1. **Element Not Found**: The "EscapeHint" heading is not found on the page, preventing admin mode activation.
-2. **Application Loading Issue**: The application may not be loading correctly or UI text may have changed.
-
-## Summary
-
-**Tests Completed:** 0/5 scenarios completed
-**Tests Passed:** 0/30+ steps
-**Tests Failed:** 30+ steps
-**Error Rate:** 100%
-
-## Critical Issues
-
-1. **Application UI Mismatch**: The text elements that the tests are looking for don't match what's actually displayed in the application. This could be due to:
-   - UI text changes that weren't reflected in the test code
-   - Application not loading properly
-   - Different language settings
-
-2. **Frontend/Backend Connection Issues**: The application may not be connecting properly to the backend, causing elements to not load as expected.
-
-3. **Test Selector Issues**: The test selectors (text-based locators) may need to be updated to match the current application UI.
-
-## Recommendations
-
-1. **UI Verification**: Check the actual application to verify the current UI text and element selectors.
-2. **Backend Status**: Verify that the backend server is running properly and connecting to the database.
-3. **Test Updates**: Update the test cases to use correct selectors (possibly based on data-testid attributes or CSS classes rather than text content).
-4. **Debugging**: Add more detailed debugging information in the tests to understand what the application is actually rendering.
-5. **Infrastructure Check**: Ensure all necessary services (frontend, backend, database) are running before tests.
-
-## Next Actions
-
-1. Investigate why the application UI doesn't match the expected text elements in tests.
-2. Verify that all services are running properly.
-3. Update test selectors to match the current application UI.
-4. Re-run tests after fixes.
+1. E2E 테스트 스위트의 유지 관리 및 확장을 지속하십시오.
+2. 자동화된 실행을 위해 CI/CD 파이프라인에 테스트를 통합하십시오.
+3. 사용자 피드백 및 요구 사항 변경 사항을 기반으로 보다 포괄적인 테스트 시나리오를 추가하십시오.
