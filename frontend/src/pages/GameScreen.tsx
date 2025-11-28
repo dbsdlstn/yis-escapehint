@@ -24,8 +24,7 @@ export const GameScreen: React.FC = () => {
 
   // 현재 세션 ID에 따라 세션 정보를 가져옴
   const { data: currentSession, isLoading: isSessionLoading, error: sessionFetchError } = GameSessionService.useGetSession(
-    currentSessionId || '',
-    { enabled: !!currentSessionId }
+    currentSessionId || ''
   );
 
   const { mutateAsync: _submitHint } = HintService.useSubmitHint();
@@ -216,9 +215,9 @@ export const GameScreen: React.FC = () => {
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-4">게임 준비 중...</h2>
             <p className="text-text-secondary">잠시만 기다려주세요</p>
-            {sessionError && <p className="text-red-500">세션 생성 오류 발생: {(sessionError as Error).message}</p>}
-            {themeError && <p className="text-red-500">테마 정보 로딩 오류: {(themeError as Error).message}</p>}
-            {sessionFetchError && <p className="text-red-500">세션 복구 오류: {(sessionFetchError as Error).message}</p>}
+            {sessionError && <div><p className="text-red-500">세션 생성 오류 발생: {(sessionError as Error).message}</p></div>}
+            {themeError && <div><p className="text-red-500">테마 정보 로딩 오류: {(themeError as Error).message}</p></div>}
+            {sessionFetchError && <div><p className="text-red-500">세션 복구 오류: {(sessionFetchError as Error).message}</p></div>}
           </div>
         </div>
       </div>
