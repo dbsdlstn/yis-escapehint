@@ -37,6 +37,11 @@ const logger = {
       console.debug("[DEBUG]", new Date().toISOString(), ...args);
     }
   },
+  http: (...args: any[]) => {
+    if (shouldLog("info")) {
+      console.log("[HTTP]", new Date().toISOString(), ...args);
+    }
+  },
   log: (...args: any[]) => {
     // 기본적으로 info 레벨처럼 처리
     if (shouldLog("info")) {
