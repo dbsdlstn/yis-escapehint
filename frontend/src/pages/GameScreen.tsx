@@ -16,54 +16,91 @@ export const GameScreen: React.FC = () => {
   const [inputFields, setInputFields] = useState<string[]>(Array(4).fill(''));
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
-  const { data: theme, isLoading: isLoadingTheme, error } = ThemeService.useGetThemeById(themeId || '');
-  const { mutate: startSession, data: sessionData, isPending: isCreatingSession } = GameSessionService.useStartSession();
+  const { data: theme, isLoading: isLoadingTheme, error: themeError } = ThemeService.useGetThemeById(themeId || '');
+
+  // 세션 생성을 위한 mutation
+  const { mutate: startSession, data: sessionData, isPending: isCreatingSession, error: sessionError } = GameSessionService.useStartSession();
+
+  // 현재 세션 ID에 따라 세션 정보를 가져옴
+  const { data: currentSession, isLoading: isSessionLoading, error: sessionFetchError } = GameSessionService.useGetSession(
+    currentSessionId || '',
+    { enabled: !!currentSessionId }
+  );
+
   const { mutateAsync: _submitHint } = HintService.useSubmitHint();
 
-  // Get session from localStorage on component mount
+  // 현재 로컬 스토리지에 저장된 세션 ID 가져오기
   const savedSessionId = localStorage.getItem('currentSessionId');
-  const { data: restoredSession, isLoading: isRestoringSession } = GameSessionService.useGetSession(savedSessionId || '', {
-    enabled: !!savedSessionId, // Only fetch if savedSessionId exists
-  });
 
-  // 세션이 현재 테마와 일치하는지 확인
+  // 세션 생성 또는 복구 로직
   useEffect(() => {
-    if (restoredSession && themeId && restoredSession.themeId !== themeId) {
-      // 복구된 세션이 현재 테마와 다르면 localStorage 삭제하고 새 세션 생성
-      console.log('세션 테마 불일치 - 새 세션 생성:', {
-        savedThemeId: restoredSession.themeId,
-        currentThemeId: themeId
+    // 먼저 저장된 세션 ID를 사용하려 시도
+    if (savedSessionId && themeId) {
+      // 저장된 세션이 현재 테마와 일치하는지 확인
+      // useGetSession 훅을 직접 호출하는 대신 수동으로 API 호출
+      fetch(`/api/sessions/${savedSessionId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => {
+        if (!response.ok) {
+          // 세션이 존재하지 않는 경우 (404 등)
+          if (response.status === 404) {
+            console.log('저장된 세션이 데이터베이스에 존재하지 않음:', savedSessionId);
+            localStorage.removeItem('currentSessionId');
+            startSession(themeId);
+            return null;
+          }
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data && data.success && data.data.themeId === themeId) {
+          // 테마가 일치하면 현재 세션 ID로 사용
+          setCurrentSessionId(savedSessionId);
+        } else if (data) {
+          // 테마가 불일치하면 저장된 세션 ID 제거 및 새 세션 생성
+          localStorage.removeItem('currentSessionId');
+          startSession(themeId);
+        }
+      })
+      .catch(error => {
+        console.error('세션 복구 중 오류 발생:', error);
+        // 저장된 세션이 유효하지 않으면 새 세션 생성
+        localStorage.removeItem('currentSessionId');
+        startSession(themeId);
       });
-      localStorage.removeItem('currentSessionId');
-      startSession(themeId);
-    }
-  }, [restoredSession, themeId, startSession]);
-
-  // 현재 활성 세션 결정 - 복구된 세션은 테마가 일치할 때만 사용
-  const activeSession = sessionData || (restoredSession?.themeId === themeId ? restoredSession : null);
-  const isLoadingSession = isCreatingSession || isRestoringSession;
-
-  useEffect(() => {
-    if (!savedSessionId && themeId) {
-      // If no saved session, start a new session
+    } else if (!savedSessionId && themeId) {
+      // 저장된 세션이 없고 테마 ID가 있으면 새 세션 생성
       startSession(themeId);
     }
   }, [savedSessionId, themeId, startSession]);
 
-  // Initialize timer when theme and session data are available
+  // 세션 생성 시 로컬 스토리지 및 현재 세션 ID 업데이트
   useEffect(() => {
-    if (theme && sessionData) {
+    if (sessionData && sessionData.id) {
+      localStorage.setItem('currentSessionId', sessionData.id);
+      setCurrentSessionId(sessionData.id);
+    }
+  }, [sessionData]);
+
+  // 세션 데이터가 있을 때 타이머 초기화
+  useEffect(() => {
+    if (theme && currentSession) {
       // Initialize with full time based on theme's playTime
       const serverPlayTime = theme.playTime || 0; // in minutes
       const totalSeconds = Number.isFinite(serverPlayTime) ? serverPlayTime * 60 : 0;
       const validatedTotalSeconds = Number.isFinite(totalSeconds) && totalSeconds >= 0 ? totalSeconds : 0;
 
       // Set the session start time and initial timer value
-      setSessionStartTime(new Date(sessionData.startTime));
+      setSessionStartTime(new Date(currentSession.startTime));
       setTimer(validatedTotalSeconds);
     }
-  }, [theme, sessionData]);
+  }, [theme, currentSession]);
 
   // Timer effect with server synchronization
   useEffect(() => {
@@ -129,7 +166,7 @@ export const GameScreen: React.FC = () => {
 
   const handleSubmit = async () => {
     if (hintCode.length !== 4) return;
-    if (!activeSession) {
+    if (!currentSessionId) {
       alert('세션이 생성되지 않았습니다. 잠시 후 다시 시도해주세요.');
       return;
     }
@@ -137,13 +174,12 @@ export const GameScreen: React.FC = () => {
     setIsSubmitting(true);
     try {
       console.log('=== 세션 ID 디버깅 ===');
-      console.log('activeSession:', activeSession);
-      console.log('세션 ID:', activeSession.id);
+      console.log('currentSessionId:', currentSessionId);
 
       // 힌트 제출
-      console.log('힌트 제출 요청:', { sessionId: activeSession.id, code: hintCode.toUpperCase() });
+      console.log('힌트 제출 요청:', { sessionId: currentSessionId, code: hintCode.toUpperCase() });
       const result = await _submitHint({
-        sessionId: activeSession.id,
+        sessionId: currentSessionId,
         code: hintCode.toUpperCase()
       });
 
@@ -170,14 +206,44 @@ export const GameScreen: React.FC = () => {
     return `${isNegative ? '-' : ''}${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  // 로딩 상태: 테마 로딩 중이거나 세션을 생성/로드 중일 때만
+  const isLoading = isLoadingTheme || isCreatingSession || (savedSessionId ? isSessionLoading : false);
+
   // 세션 로딩 중이면 로딩 화면 표시
-  if (isLoadingSession || isLoadingTheme) {
+  if (isLoading) {
     return (
       <div className="screen-container">
         <div className="content-wrapper flex items-center justify-center min-h-screen">
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-4">게임 준비 중...</h2>
             <p className="text-text-secondary">잠시만 기다려주세요</p>
+            {sessionError && <p className="text-red-500">세션 생성 오류 발생: {sessionError.message}</p>}
+            {themeError && <p className="text-red-500">테마 정보 로딩 오류: {themeError.message}</p>}
+            {sessionFetchError && <p className="text-red-500">세션 복구 오류: {sessionFetchError.message}</p>}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If there's an error in session creation or theme loading
+  if (sessionError || themeError || sessionFetchError) {
+    return (
+      <div className="screen-container">
+        <div className="content-wrapper flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-4 text-red-500">로딩 오류 발생</h2>
+            <p className="text-text-secondary mb-4">
+              {sessionError ? `세션 생성 오류: ${sessionError.message}` :
+               themeError ? `테마 정보 오류: ${themeError.message}` :
+               `세션 복구 오류: ${sessionFetchError.message}`}
+            </p>
+            <button
+              onClick={() => navigate('/')}
+              className="px-6 py-3 bg-accent-white text-dark-primary rounded-xl font-bold"
+            >
+              테마 선택으로 돌아가기
+            </button>
           </div>
         </div>
       </div>
@@ -185,7 +251,7 @@ export const GameScreen: React.FC = () => {
   }
 
   // 세션이 없으면 에러 메시지
-  if (!activeSession) {
+  if (!currentSession) {
     return (
       <div className="screen-container">
         <div className="content-wrapper flex items-center justify-center min-h-screen">

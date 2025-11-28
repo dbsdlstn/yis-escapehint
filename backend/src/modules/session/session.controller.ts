@@ -12,11 +12,22 @@ export const sessionRouter = router;
 // 세션 생성 (플레이어용)
 router.post("/", async (req: Request, res: Response) => {
   try {
+    console.log('=== 세션 생성 요청 디버깅 ===');
+    console.log('req.body:', req.body);
+    console.log('URL:', req.url);
+    console.log('원본 URL:', req.originalUrl);
+
     const { themeId } = req.body;
+
+    console.log('추출된 테마 ID:', themeId);
+
     const session = await sessionService.createSession(themeId);
+    console.log('생성된 세션:', session);
+
     sendResponse(res, session, "Session created successfully", 201);
     return;
   } catch (error) {
+    console.error('세션 생성 에러:', error);
     if (error instanceof AppError) {
       // Error handling is done by the global error middleware
       throw error;
@@ -30,7 +41,14 @@ router.post("/", async (req: Request, res: Response) => {
 // 세션 조회 (플레이어용)
 router.get("/:id", async (req: Request, res: Response) => {
   try {
+    console.log('=== 세션 조회 요청 디버깅 ===');
+    console.log('req.params:', req.params);
+    console.log('URL:', req.url);
+    console.log('원본 URL:', req.originalUrl);
+
     const { id } = req.params;
+
+    console.log('추출된 세션 ID:', id);
 
     // ID 유효성 검사
     if (!id || id === 'undefined') {
@@ -39,10 +57,12 @@ router.get("/:id", async (req: Request, res: Response) => {
     }
 
     const session = await sessionService.getSession(id);
+    console.log('조회된 세션:', session);
 
     sendResponse(res, session, "Session retrieved successfully", 200);
     return;
   } catch (error) {
+    console.error('세션 조회 에러:', error);
     if (error instanceof AppError) {
       // Error handling is done by the global error middleware
       throw error;
