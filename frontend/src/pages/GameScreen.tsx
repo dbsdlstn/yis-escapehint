@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../stores/ThemeContext';
 import { GameSessionService } from '../services/GameSessionService';
@@ -11,7 +11,6 @@ export const GameScreen: React.FC = () => {
   const { darkMode: _darkMode } = useTheme();
   const [timer, setTimer] = useState<number>(0); // in seconds
   const [usedHintCount, _setUsedHintCount] = useState<number>(0);
-  const [progress, _setProgress] = useState<number>(0);
   const [hintCode, setHintCode] = useState<string>('');
   const [inputFields, setInputFields] = useState<string[]>(Array(4).fill(''));
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -217,9 +216,9 @@ export const GameScreen: React.FC = () => {
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-4">게임 준비 중...</h2>
             <p className="text-text-secondary">잠시만 기다려주세요</p>
-            {sessionError && <p className="text-red-500">세션 생성 오류 발생: {sessionError.message}</p>}
-            {themeError && <p className="text-red-500">테마 정보 로딩 오류: {themeError.message}</p>}
-            {sessionFetchError && <p className="text-red-500">세션 복구 오류: {sessionFetchError.message}</p>}
+            {sessionError && <p className="text-red-500">세션 생성 오류 발생: {(sessionError as Error).message}</p>}
+            {themeError && <p className="text-red-500">테마 정보 로딩 오류: {(themeError as Error).message}</p>}
+            {sessionFetchError && <p className="text-red-500">세션 복구 오류: {(sessionFetchError as Error).message}</p>}
           </div>
         </div>
       </div>
@@ -234,9 +233,9 @@ export const GameScreen: React.FC = () => {
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-4 text-red-500">로딩 오류 발생</h2>
             <p className="text-text-secondary mb-4">
-              {sessionError ? `세션 생성 오류: ${sessionError.message}` :
-               themeError ? `테마 정보 오류: ${themeError.message}` :
-               `세션 복구 오류: ${sessionFetchError.message}`}
+              {sessionError ? `세션 생성 오류: ${(sessionError as Error).message}` :
+               themeError ? `테마 정보 오류: ${(themeError as Error).message}` :
+               `세션 복구 오류: ${(sessionFetchError as Error).message}`}
             </p>
             <button
               onClick={() => navigate('/')}
