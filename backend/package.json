@@ -4,16 +4,13 @@
   "description": "This document explains how to set up PostgreSQL for the EscapeHint project using the provided configuration.",
   "main": "dist/app.js",
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
     "lint": "eslint --ext .ts,.js src/",
     "lint:fix": "eslint --ext .ts,.js --fix src/",
-    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts\"",
     "dev": "ts-node src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node src/scripts/seed-data.ts"
   },
   "keywords": [],
   "author": "",

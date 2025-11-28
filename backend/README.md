@@ -8,7 +8,6 @@ EscapeHint는 방탈출 카페에서 플레이어들에게 실시간으로 힌�
 - TypeScript
 - Express.js
 - PostgreSQL (Supabase)
-- Prisma ORM
 - JWT 인증
 - Zod (환경변수 검증)
 - Winston (로깅)
@@ -47,13 +46,7 @@ LOG_LEVEL="info"
 PORT=3000
 ```
 
-### 3. Prisma 데이터베이스 마이그레이션
-
-```bash
-npx prisma migrate dev
-```
-
-### 4. 시드 데이터 삽입 (선택 사항)
+### 3. 시드 데이터 삽입 (선택 사항)
 
 ```bash
 npm run seed
@@ -130,12 +123,6 @@ Vercel 대시보드에서 다음과 같은 환경 변수를 설정해야 합니�
 - `LOG_LEVEL`: `info`
 
 ### 마이그레이션 배포
-
-배포 후 데이터베이스 마이그레이션을 실행해야 합니다:
-
-```bash
-npx prisma migrate deploy
-```
 
 ## 폴더 구조
 

@@ -43,7 +43,6 @@ module.exports = tseslint.config(
       'coverage/',
       '*.config.js',
       '*.config.ts',
-      'prisma/',
       'tests/',
     ],
   }

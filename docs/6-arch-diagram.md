@@ -4,11 +4,11 @@
 
 | 항목            | 내용                                                                                                         |
 | --------------- | ------------------------------------------------------------------------------------------------------------ |
-| **문서 버전**   | 1.1                                                                                                          |
+| **문서 버전**   | 1.2                                                                                                          |
 | **작성일**      | 2025-11-26                                                                                                   |
 | **작성자**      | Architecture Reviewer                                                                                        |
 | **승인자**      | 윤인수                                                                                                       |
-| **최종 수정일** | 2025-11-26                                                                                                   |
+| **최종 수정일** | 2025-11-28                                                                                                   |
 | **문서 상태**   | 최종 승인                                                                                                    |
 | **관련 문서**   | [도메인 정의서](./1-domain-definition.md), [PRD](./3-prd.md), [프로젝트 구조 원칙](./5-project-structure.md) |
 
@@ -58,7 +58,7 @@ graph TB
 
     Player -->|HTTPS| API
     Admin -->|HTTPS<br/>JWT Auth| API
-    API -->|Prisma ORM| DB
+    API -->|PostgreSQL Direct Access| DB
     Player -.->|세션 저장| Cache
 
     style Player fill:#4A90E2,color:#fff
@@ -102,7 +102,7 @@ graph TB
         end
 
         subgraph "Data Access Layer"
-            Prisma["Prisma ORM<br/>(데이터베이스 쿼리)"]
+            DBClient["pg.Pool<br/>(PostgreSQL Client)"]
         end
 
         subgraph "Cross-Cutting Concerns"
@@ -112,7 +112,7 @@ graph TB
 
         Routes -->|라우팅| Controllers
         Controllers -->|비즈니스 로직| Services
-        Services -->|데이터 접근| Prisma
+        Services -->|데이터 접근| DBClient
         Middleware -.->|모든 계층| Routes
         Utils -.->|모든 계층| Services
     end
@@ -120,7 +120,7 @@ graph TB
     style Routes fill:#4A90E2,color:#fff
     style Controllers fill:#50C878,color:#fff
     style Services fill:#FFD700,color:#333
-    style Prisma fill:#FF6B6B,color:#fff
+    style DBClient fill:#FF6B6B,color:#fff
     style Middleware fill:#9370DB,color:#fff
     style Utils fill:#20B2AA,color:#fff
 ```
@@ -132,7 +132,7 @@ graph TB
 1. **Routes**: HTTP 요청 라우팅 및 입력 검증
 2. **Controllers**: 비즈니스 로직 호출 및 응답 처리
 3. **Services**: 핵심 비즈니스 로직 및 데이터 접근 조율
-4. **Prisma ORM**: 타입 안전 데이터베이스 쿼리
+4. **pg.Pool**: PostgreSQL 데이터베이스 직접 접근
 
 **주요 모듈:**
 

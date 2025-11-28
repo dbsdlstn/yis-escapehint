@@ -28,7 +28,7 @@
 방탈출 게임의 테마 정보
 
 ```
-- id: 고유 식별자
+- id: 고유 식별자 (UUID)
 - name: 테마 이름
 - description: 테마 설명
 - playTime: 제한 시간 (분 단위)
@@ -42,8 +42,8 @@
 특정 테마에 속한 힌트 정보
 
 ```
-- id: 고유 식별자
-- themeId: 소속 테마 ID
+- id: 고유 식별자 (UUID)
+- themeId: 소속 테마 ID (FK)
 - code: 힌트 코드 (고객이 입력하는 값)
 - content: 힌트 내용 (텍스트)
 - answer: 정답 내용 (텍스트)
@@ -59,13 +59,24 @@
 진행 중인 게임 세션 정보
 
 ```
-- id: 고유 식별자
-- themeId: 플레이 중인 테마 ID
+- id: 고유 식별자 (UUID)
+- themeId: 플레이 중인 테마 ID (FK)
 - startTime: 시작 시간
 - endTime: 종료 시간
 - usedHintCount: 사용한 힌트 수
-- usedHintCodes: 사용한 힌트 코드 목록
+- usedHintCodes: 사용한 힌트 코드 목록 (JSON)
 - status: 세션 상태 (진행중/완료/중단)
+```
+
+#### HintUsage (힌트 사용 이력)
+
+게임 세션 중 힌트 사용 이력 정보
+
+```
+- id: 고유 식별자 (UUID)
+- sessionId: 세션 ID (FK)
+- hintId: 힌트 ID (FK)
+- usedAt: 사용 시간
 ```
 
 ### 2.2 도메인 관계도
@@ -77,7 +88,7 @@ Theme (1) ---> (N) Hint
  (1)
   |
  (N)
-GameSession
+GameSession (1) ---> (N) HintUsage (N) <--- (1) Hint
 ```
 
 ### 2.3 주요 값 객체(Value Objects)
