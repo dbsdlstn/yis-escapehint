@@ -10,7 +10,6 @@ EscapeHint는 방탈출 카페에서 플레이어들에게 실시간으로 힌�
 - PostgreSQL (Supabase)
 - JWT 인증
 - Zod (환경변수 검증)
-- Winston (로깅)
 - Jest (테스트)
 
 ## 설치 및 설정
