@@ -149,3 +149,5 @@ prisma/migrations/
 # Windows system files
 nul
 backend/nul
+test-results/.last-run.json
+test-results/.last-run.json

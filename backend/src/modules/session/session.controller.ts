@@ -95,8 +95,9 @@ router.post("/:id/hints", async (req: Request, res: Response) => {
   } catch (error) {
     console.error('힌트 제출 에러:', error);
     if (error instanceof AppError) {
-      // Error handling is done by the global error middleware
-      throw error;
+      // AppError의 경우 클라이언트에게 상태 코드와 메시지를 반환
+      sendErrorResponse(res, error.message, error.statusCode);
+      return;
     }
 
     sendErrorResponse(res, "서버 오류가 발생했습니다.", 500);

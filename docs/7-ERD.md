@@ -4,11 +4,11 @@
 
 | 항목            | 내용                                                                                                     |
 | --------------- | -------------------------------------------------------------------------------------------------------- |
-| **문서 버전**   | 1.0                                                                                                      |
+| **문서 버전**   | 1.1                                                                                                      |
 | **작성일**      | 2025-11-26                                                                                               |
 | **작성자**      | Architecture Reviewer                                                                                    |
 | **승인자**      | 윤인수                                                                                                   |
-| **최종 수정일** | 2025-11-26                                                                                               |
+| **최종 수정일** | 2025-11-28                                                                                               |
 | **문서 상태**   | 최종 승인                                                                                                |
 | **관련 문서**   | [도메인 정의서](./1-domain-definition.md), [PRD](./3-prd.md), [아키텍처 다이어그램](./6-arch-diagram.md) |
 
@@ -239,15 +239,15 @@ ENUM status ('in_progress', 'completed', 'aborted');
 ```prisma
 model Theme {
   id          String        @id @default(uuid())
-  name        String
+  name        String        @unique
   description String?
   playTime    Int           @default(60)
   isActive    Boolean       @default(true)
+  difficulty  String?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-
-  hints       Hint[]
   sessions    GameSession[]
+  hints       Hint[]
 
   @@index([isActive])
 }
@@ -263,30 +263,26 @@ model Hint {
   isActive     Boolean     @default(true)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
-
   theme        Theme       @relation(fields: [themeId], references: [id], onDelete: Cascade)
   usages       HintUsage[]
 
   @@unique([themeId, code])
-  @@index([themeId])
+  @@index([themeId, code])
 }
 
 model GameSession {
-  id             String      @id @default(uuid())
-  themeId        String
-  startTime      DateTime    @default(now())
-  endTime        DateTime?
-  usedHintCount  Int         @default(0)
-  usedHintCodes  Json        @default("[]")
-  status         SessionStatus @default(in_progress)
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id            String        @id @default(uuid())
+  themeId       String
+  startTime     DateTime      @default(now())
+  endTime       DateTime?
+  usedHintCount Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  status        SessionStatus @default(in_progress)
+  theme         Theme         @relation(fields: [themeId], references: [id])
+  hintUsages    HintUsage[]
 
-  theme          Theme       @relation(fields: [themeId], references: [id])
-  hintUsages     HintUsage[]
-
-  @@index([themeId])
-  @@index([status])
+  @@index([themeId, status])
 }
 
 model HintUsage {
@@ -294,12 +290,11 @@ model HintUsage {
   sessionId String
   hintId    String
   usedAt    DateTime    @default(now())
-
-  session   GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   hint      Hint        @relation(fields: [hintId], references: [id], onDelete: Cascade)
+  session   GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
+  @@unique([sessionId, hintId])
   @@index([sessionId])
-  @@index([hintId])
 }
 
 enum SessionStatus {
@@ -380,9 +375,10 @@ enum SessionStatus {
 
 ## 문서 변경 이력
 
-| 버전 | 날짜       | 작성자                | 변경 내용          | 승인자 |
-| ---- | ---------- | --------------------- | ------------------ | ------ |
-| 1.0  | 2025-11-26 | Architecture Reviewer | ERD 문서 초안 작성 | 윤인수 |
+| 버전 | 날짜       | 작성자                | 변경 내용                                    | 승인자 |
+| ---- | ---------- | --------------------- | -------------------------------------------- | ------ |
+| 1.0  | 2025-11-26 | Architecture Reviewer | ERD 문서 초안 작성                           | 윤인수 |
+| 1.1  | 2025-11-28 | Architecture Reviewer | Prisma 스키마에 맞게 모델 정의 업데이트        | 윤인수 |
 
 ---
 

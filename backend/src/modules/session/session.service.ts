@@ -121,7 +121,9 @@ export class SessionService {
         include: { hint: true },
       });
 
-      const maxProgressRate = Math.max(0, ...hintUsages.map(usage => usage.hint.progressRate));
+      // Calculate max progress rate, default to 0 if no hints have been used
+      const progressRates = hintUsages.map(usage => usage.hint.progressRate);
+      const maxProgressRate = progressRates.length > 0 ? Math.max(...progressRates) : 0;
 
       return {
         hint,
