@@ -20,6 +20,9 @@ import { env } from "./config/env.config";
 
 const app = express();
 
+// Trust proxy 설정 - Vercel과 같은 클라우드 환경에서 필요
+app.set("trust proxy", true);
+
 // 보안 미들웨어
 app.use(
   helmet({
