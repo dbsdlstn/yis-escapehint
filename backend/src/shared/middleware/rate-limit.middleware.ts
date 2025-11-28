@@ -13,7 +13,7 @@ import { env } from "../../config/env.config";
  */
 export const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1분
-  max: 100, // 최대 100 요청
+  max: 1000, // 최대 1000 요청
   message: "너무 많은 요청을 보냈습니다. 잠시 후 다시 시도하세요.",
   standardHeaders: true, // RateLimit-* 헤더 추가
   legacyHeaders: false, // X-RateLimit-* 헤더 제거

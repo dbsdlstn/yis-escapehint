@@ -34,11 +34,13 @@ export const GameScreen: React.FC = () => {
 
   // 세션 생성 또는 복구 로직
   useEffect(() => {
+    let isMounted = true; // 컴포넌트 언마운트 후 상태 업데이트 방지
+
     // 먼저 저장된 세션 ID를 사용하려 시도
-    if (savedSessionId && themeId) {
+    if (savedSessionId && themeId && !isCreatingSession) {
       // 저장된 세션이 현재 테마와 일치하는지 확인
       // useGetSession 훅을 직접 호출하는 대신 수동으로 API 호출
-      fetch(`/api/sessions/${savedSessionId}`, {
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/sessions/${savedSessionId}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -48,8 +50,10 @@ export const GameScreen: React.FC = () => {
           // 세션이 존재하지 않는 경우 (404 등)
           if (response.status === 404) {
             console.log('저장된 세션이 데이터베이스에 존재하지 않음:', savedSessionId);
-            localStorage.removeItem('currentSessionId');
-            startSession(themeId);
+            if (isMounted) {
+              localStorage.removeItem('currentSessionId');
+              startSession(themeId);
+            }
             return null;
           }
           throw new Error('Network response was not ok');
@@ -57,26 +61,32 @@ export const GameScreen: React.FC = () => {
         return response.json();
       })
       .then(data => {
-        if (data && data.success && data.data?.themeId === themeId) {
+        if (isMounted && data && data.success && data.data?.themeId === themeId) {
           // 테마가 일치하면 현재 세션 ID로 사용
           setCurrentSessionId(savedSessionId);
-        } else if (data) {
+        } else if (isMounted && data) {
           // 테마가 불일치하면 저장된 세션 ID 제거 및 새 세션 생성
           localStorage.removeItem('currentSessionId');
           startSession(themeId);
         }
       })
       .catch(error => {
-        console.error('세션 복구 중 오류 발생:', error);
-        // 저장된 세션이 유효하지 않으면 새 세션 생성
-        localStorage.removeItem('currentSessionId');
-        startSession(themeId);
+        if (isMounted) {
+          console.error('세션 복구 중 오류 발생:', error);
+          // 저장된 세션이 유효하지 않으면 새 세션 생성
+          localStorage.removeItem('currentSessionId');
+          startSession(themeId);
+        }
       });
-    } else if (!savedSessionId && themeId) {
+    } else if (!savedSessionId && themeId && !isCreatingSession) {
       // 저장된 세션이 없고 테마 ID가 있으면 새 세션 생성
       startSession(themeId);
     }
-  }, [savedSessionId, themeId, startSession]);
+
+    return () => {
+      isMounted = false; // 컴포넌트 언마운트 시 isMounted를 false로 설정
+    };
+  }, [savedSessionId, themeId, startSession, isCreatingSession]);
 
   // 세션 생성 시 로컬 스토리지 및 현재 세션 ID 업데이트
   useEffect(() => {
