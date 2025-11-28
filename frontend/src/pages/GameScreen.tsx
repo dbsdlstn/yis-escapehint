@@ -58,7 +58,7 @@ export const GameScreen: React.FC = () => {
         return response.json();
       })
       .then(data => {
-        if (data && data.success && data.data.themeId === themeId) {
+        if (data && data.success && data.data?.themeId === themeId) {
           // 테마가 일치하면 현재 세션 ID로 사용
           setCurrentSessionId(savedSessionId);
         } else if (data) {
@@ -232,11 +232,11 @@ export const GameScreen: React.FC = () => {
         <div className="content-wrapper flex items-center justify-center min-h-screen">
           <div className="text-center">
             <h2 className="text-xl font-semibold mb-4 text-red-500">로딩 오류 발생</h2>
-            <p className="text-text-secondary mb-4">
+            <div className="text-text-secondary mb-4">
               {sessionError ? `세션 생성 오류: ${(sessionError as Error).message}` :
                themeError ? `테마 정보 오류: ${(themeError as Error).message}` :
                `세션 복구 오류: ${(sessionFetchError as Error).message}`}
-            </p>
+            </div>
             <button
               onClick={() => navigate('/')}
               className="px-6 py-3 bg-accent-white text-dark-primary rounded-xl font-bold"

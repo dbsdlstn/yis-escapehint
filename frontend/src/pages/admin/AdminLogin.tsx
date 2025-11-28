@@ -20,7 +20,7 @@ export const AdminLogin: React.FC = () => {
         onSuccess: (data) => {
           console.log('Received full response:', data); // 전체 응답 구조 확인
           // Store the access token using the auth hook
-          authLogin(data.data.accessToken);
+          authLogin(data.accessToken);
           console.log('Token stored via auth hook');
           // Redirect to admin dashboard
           navigate('/admin/dashboard');

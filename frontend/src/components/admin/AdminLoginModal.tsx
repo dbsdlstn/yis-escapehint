@@ -53,7 +53,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
       {
         onSuccess: (data) => {
           // Store the access token using the auth hook
-          authLogin(data.data.accessToken);
+          authLogin(data.accessToken);
           setPassword('');
           setError('');
           setFailedAttempts(0);
